@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة خدمات جامعة الناجي الإلكترونية</title>
+    
+    <!-- خط Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <style>
+        /* ============ المتغيرات ============ */
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --primary-light: #dbeafe;
+            --text-dark: #1f2937;
+            --text-medium: #4b5563;
+            --text-light: #6b7280;
+            --bg-light: #f9fafb;
+            --bg-white: #ffffff;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --transition-normal: 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.8;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ============ الترويسة ============ */
+        .main-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1e40af 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo span {
+            font-size: 3rem;
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .main-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ============ عنوان القسم ============ */
+        .section-title {
+            text-align: center;
+            margin: 40px 0;
+            color: var(--text-dark);
+            font-size: 2rem;
+            font-weight: 900;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-medium);
+            margin-top: -30px;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        /* ============ شبكة الخدمات ============ */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-normal);
+            display: block;
+            border: 2px solid transparent;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-color);
+        }
+
+        .service-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 20px;
+            transition: var(--transition-normal);
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .service-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .service-card p {
+            color: var(--text-medium);
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        .btn-service {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+
+        .service-card:hover .btn-service {
+            background: var(--primary-dark);
+        }
+
+        /* ============ التذييل ============ */
+        .main-footer {
+            background: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+        }
+
+        /* ============ صفحة النموذج ============ */
+        .form-page {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+        }
+
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-header .form-icon {
+            font-size: 4rem;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .form-header h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: var(--text-medium);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-heading {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition-normal);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+            background-size: 20px;
+            padding-left: 45px;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition-normal);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50px;
+            transition: var(--transition-normal);
+            border: none;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .alert {
+            padding: 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        /* إخفاء الصفحات */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* التجاوب */
+        @media (max-width: 768px) {
+            .main-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                margin: 20px;
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- ============ الصفحة الرئيسية ============ -->
+    <div id="homePage" class="page active">
+        <header class="main-header">
+            <div class="container">
+                <div class="logo">
+                    <span>🏛️</span>
+                    <h1>بوابة خدمات جامعة الناجي الإلكترونية</h1>
+                </div>
+                <p>قدم طلباتك إلكترونياً بدون مراجعة الدوام</p>
+            </div>
+        </header>
+
+        <main class="container">
+            <h2 class="section-title">الخدمات المتاحة</h2>
+            <p class="section-subtitle">اختر الخدمة التي تحتاجها وقدم طلبك خلال دقائق</p>
+            
+            <div class="services-grid">
+                <!-- خدمة هوية طالب -->
+                <div class="service-card" onclick="showForm('studentId')">
+                    <span class="service-icon">🪪</span>
+                    <h3>طلب هوية طالب</h3>
+                    <p>إصدار أو تجديد الهوية الجامعية للطلاب</p>
+                    <span class="btn-service">تقديم طلب</span>
+                </div>
+
+                <!-- خدمة هوية موظفين وتدريسيين -->
+                <div class="service-card" onclick="showForm('staffId')">
+                    <span class="service-icon">👔</span>
+                    <h3>هوية موظفين / تدريسيين</h3>
+                    <p>إصدار هوية للموظفين وأعضاء الهيئة التدريسية</p>
+                    <span class="btn-service">تقديم طلب</span>
+                </div>
+
+                <!-- خدمة استمرار دراسة -->
+                <div class="service-card" onclick="showForm('continuation')">
+                    <span class="service-icon">📚</span>
+                    <h3>استمارة استمرار بالدراسة</h3>
+                    <p>طلب استمرار للعام الدراسي القادم</p>
+                    <span class="btn-service">تقديم طلب</span>
+                </div>
+
+                <!-- خدمة كشف الدرجات -->
+                <div class="service-card" onclick="showForm('transcript')">
+                    <span class="service-icon">📄</span>
+                    <h3>طلب كشف الدرجات</h3>
+                    <p>استخراج كشف درجات رسمي مصدق</p>
+                    <span class="btn-service">تقديم طلب</span>
+                </div>
+
+                <!-- خدمة تأجيل دراسة -->
+                <div class="service-card" onclick="showForm('postponement')">
+                    <span class="service-icon">⏸️</span>
+                    <h3>طلب تأجيل دراسة</h3>
+                    <p>تأجيل الفصل الدراسي الحالي</p>
+                    <span class="btn-service">تقديم طلب</span>
+                </div>
+
+                <!-- خدمة الايميل الجامعي -->
+                <div class="service-card" onclick="showForm('universityEmail')">
+                    <span class="service-icon">📧</span>
+                    <h3>الايميل الجامعي</h3>
+                    <p>إنشاء أو استرجاع البريد الإلكتروني الجامعي</p>
+                    <span class="btn-service">تقديم طلب</span>
+                </div>
+
+                <!-- خدمة الشكاوى -->
+                <div class="service-card" onclick="showForm('complaint')">
+                    <span class="service-icon">📝</span>
+                    <h3>الشكاوى والمقترحات</h3>
+                    <p>تقديم شكوى أو اقتراح لتحسين الخدمات</p>
+                    <span class="btn-service">تقديم طلب</span>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <p>© 2024 جامعة الناجي - جميع الحقوق محفوظة</p>
+        </footer>
+    </div>
+
+    <!-- ============ نموذج هوية طالب ============ -->
+    <div id="studentIdPage" class="page form-page">
+        <div class="container">
+            <button class="back-btn" onclick="goHome()">→ العودة للخدمات</button>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <span class="form-icon">🪪</span>
+                    <h2>طلب إصدار هوية طالب</h2>
+                    <p>املأ جميع الحقول المطلوبة بدقة</p>
+                </div>
+
+                <div id="studentIdSuccess" class="alert alert-success" style="display: none;"></div>
+                <div id="studentIdError" class="alert alert-error" style="display: none;"></div>
+
+                <form id="studentIdForm">
+                    <div class="form-section">
+                        <h3 class="section-heading">📋 المعلومات الشخصية</h3>
+                        
+                        <div class="form-group">
+                            <label>الاسم الرباعي الكامل <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>تاريخ الميلاد <span class="required">*</span></label>
+                                <input type="date" name="birthDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>مكان الميلاد <span class="required">*</span></label>
+                                <input type="text" name="birthPlace" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الجنس <span class="required">*</span></label>
+                                <select name="gender" class="form-control" required>
+                                    <option value="">اختر</option>
+                                    <option value="male">ذكر</option>
+                                    <option value="female">أنثى</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>الحالة الاجتماعية</label>
+                                <select name="maritalStatus" class="form-control">
+                                    <option value="">اختر</option>
+                                    <option value="single">أعزب/عزباء</option>
+                                    <option value="married">متزوج/متزوجة</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">🎓 المعلومات الدراسية</h3>
+                        
+                        <div class="form-group">
+                            <label>الرقم الجامعي <span class="required">*</span></label>
+                            <input type="text" name="universityId" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الكلية <span class="required">*</span></label>
+                                <select name="college" class="form-control college-select" required>
+                                    <option value="">اختر الكلية</option>
+                                    <option value="engineering">كلية الهندسة</option>
+                                    <option value="medicine">كلية الطب</option>
+                                    <option value="dentistry">كلية طب الأسنان</option>
+                                    <option value="pharmacy">كلية الصيدلة</option>
+                                    <option value="science">كلية العلوم</option>
+                                    <option value="computer">كلية علوم الحاسوب</option>
+                                    <option value="arts">كلية الآداب</option>
+                                    <option value="law">كلية القانون</option>
+                                    <option value="business">كلية الإدارة والاقتصاد</option>
+                                    <option value="education">كلية التربية</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>القسم <span class="required">*</span></label>
+                                <select name="department" class="form-control department-select" required>
+                                    <option value="">اختر القسم</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المرحلة الدراسية <span class="required">*</span></label>
+                                <select name="stage" class="form-control" required>
+                                    <option value="">اختر المرحلة</option>
+                                    <option value="first">المرحلة الأولى</option>
+                                    <option value="second">المرحلة الثانية</option>
+                                    <option value="third">المرحلة الثالثة</option>
+                                    <option value="fourth">المرحلة الرابعة</option>
+                                    <option value="fifth">المرحلة الخامسة</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>نوع الدراسة <span class="required">*</span></label>
+                                <select name="studyType" class="form-control" required>
+                                    <option value="">اختر نوع الدراسة</option>
+                                    <option value="morning">صباحي</option>
+                                    <option value="evening">مسائي</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">📞 معلومات الاتصال</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>البريد الإلكتروني <span class="required">*</span></label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">🪪 تفاصيل الطلب</h3>
+                        
+                        <div class="form-group">
+                            <label>نوع الطلب <span class="required">*</span></label>
+                            <select name="requestType" class="form-control" required>
+                                <option value="">اختر نوع الطلب</option>
+                                <option value="new">إصدار جديد</option>
+                                <option value="renewal">تجديد</option>
+                                <option value="lost">بدل فاقد</option>
+                                <option value="damaged">بدل تالف</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>ملاحظات إضافية</label>
+                            <textarea name="notes" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">📤 إرسال الطلب الآن</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ نموذج هوية موظفين وتدريسيين ============ -->
+    <div id="staffIdPage" class="page form-page">
+        <div class="container">
+            <button class="back-btn" onclick="goHome()">→ العودة للخدمات</button>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <span class="form-icon">👔</span>
+                    <h2>طلب هوية موظف / تدريسي</h2>
+                    <p>إصدار هوية للموظفين وأعضاء الهيئة التدريسية</p>
+                </div>
+
+                <div id="staffIdSuccess" class="alert alert-success" style="display: none;"></div>
+                <div id="staffIdError" class="alert alert-error" style="display: none;"></div>
+
+                <form id="staffIdForm">
+                    <div class="form-section">
+                        <h3 class="section-heading">📋 المعلومات الشخصية</h3>
+                        
+                        <div class="form-group">
+                            <label>الاسم الرباعي الكامل <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>تاريخ الميلاد <span class="required">*</span></label>
+                                <input type="date" name="birthDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>الجنس <span class="required">*</span></label>
+                                <select name="gender" class="form-control" required>
+                                    <option value="">اختر</option>
+                                    <option value="male">ذكر</option>
+                                    <option value="female">أنثى</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">💼 المعلومات الوظيفية</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>نوع الوظيفة <span class="required">*</span></label>
+                                <select name="jobType" class="form-control" required>
+                                    <option value="">اختر نوع الوظيفة</option>
+                                    <option value="academic">تدريسي</option>
+                                    <option value="administrative">موظف إداري</option>
+                                    <option value="technician">فني</option>
+                                    <option value="contract">عقد مؤقت</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>الرقم الوظيفي <span class="required">*</span></label>
+                                <input type="text" name="employeeId" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الكلية / القسم <span class="required">*</span></label>
+                                <select name="college" class="form-control" required>
+                                    <option value="">اختر</option>
+                                    <option value="engineering">كلية الهندسة</option>
+                                    <option value="medicine">كلية الطب</option>
+                                    <option value="science">كلية العلوم</option>
+                                    <option value="arts">كلية الآداب</option>
+                                    <option value="law">كلية القانون</option>
+                                    <option value="business">كلية الإدارة والاقتصاد</option>
+                                    <option value="administration">قسم الإدارة</option>
+                                    <option value="it">قسم تكنولوجيا المعلومات</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>المسمى الوظيفي <span class="required">*</span></label>
+                                <input type="text" name="jobTitle" class="form-control" required 
+                                       placeholder="مثال: مدرس / موظف / فني">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">📞 معلومات الاتصال</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>البريد الإلكتروني <span class="required">*</span></label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">🪪 تفاصيل الطلب</h3>
+                        
+                        <div class="form-group">
+                            <label>نوع الطلب <span class="required">*</span></label>
+                            <select name="requestType" class="form-control" required>
+                                <option value="">اختر نوع الطلب</option>
+                                <option value="new">إصدار جديد</option>
+                                <option value="renewal">تجديد</option>
+                                <option value="lost">بدل فاقد</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">📤 إرسال الطلب</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ نموذج استمرار دراسة ============ -->
+    <div id="continuationPage" class="page form-page">
+        <div class="container">
+            <button class="back-btn" onclick="goHome()">→ العودة للخدمات</button>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <span class="form-icon">📚</span>
+                    <h2>استمارة استمرار بالدراسة</h2>
+                    <p>للعام الدراسي 2024 - 2025</p>
+                </div>
+
+                <div id="continuationSuccess" class="alert alert-success" style="display: none;"></div>
+                <div id="continuationError" class="alert alert-error" style="display: none;"></div>
+
+                <form id="continuationForm">
+                    <div class="form-section">
+                        <h3 class="section-heading">📋 المعلومات الشخصية</h3>
+                        
+                        <div class="form-group">
+                            <label>الاسم الرباعي الكامل <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الرقم الجامعي <span class="required">*</span></label>
+                                <input type="text" name="universityId" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">🎓 المعلومات الدراسية</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الكلية <span class="required">*</span></label>
+                                <select name="college" class="form-control college-select" required>
+                                    <option value="">اختر الكلية</option>
+                                    <option value="engineering">كلية الهندسة</option>
+                                    <option value="medicine">كلية الطب</option>
+                                    <option value="science">كلية العلوم</option>
+                                    <option value="arts">كلية الآداب</option>
+                                    <option value="law">كلية القانون</option>
+                                    <option value="business">كلية الإدارة والاقتصاد</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>القسم <span class="required">*</span></label>
+                                <select name="department" class="form-control department-select" required>
+                                    <option value="">اختر القسم</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المرحلة الدراسية <span class="required">*</span></label>
+                                <select name="stage" class="form-control" required>
+                                    <option value="">اختر المرحلة</option>
+                                    <option value="first">المرحلة الأولى</option>
+                                    <option value="second">المرحلة الثانية</option>
+                                    <option value="third">المرحلة الثالثة</option>
+                                    <option value="fourth">المرحلة الرابعة</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>نوع الدراسة <span class="required">*</span></label>
+                                <select name="studyType" class="form-control" required>
+                                    <option value="">اختر نوع الدراسة</option>
+                                    <option value="morning">صباحي</option>
+                                    <option value="evening">مسائي</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">📝 تفاصيل الاستمرار</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>معدل السنة السابقة <span class="required">*</span></label>
+                                <input type="number" name="gpa" class="form-control" required 
+                                       step="0.01" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label>عدد الوحدات المجتازة <span class="required">*</span></label>
+                                <input type="number" name="completedUnits" class="form-control" required min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">📤 تقديم الاستمارة</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ نموذج كشف الدرجات ============ -->
+    <div id="transcriptPage" class="page form-page">
+        <div class="container">
+            <button class="back-btn" onclick="goHome()">→ العودة للخدمات</button>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <span class="form-icon">📄</span>
+                    <h2>طلب كشف الدرجات</h2>
+                    <p>استخراج كشف درجات رسمي مصدق</p>
+                </div>
+
+                <div id="transcriptSuccess" class="alert alert-success" style="display: none;"></div>
+                <div id="transcriptError" class="alert alert-error" style="display: none;"></div>
+
+                <form id="transcriptForm">
+                    <div class="form-section">
+                        <h3 class="section-heading">📋 المعلومات الشخصية</h3>
+                        
+                        <div class="form-group">
+                            <label>الاسم الرباعي الكامل <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الرقم الجامعي <span class="required">*</span></label>
+                                <input type="text" name="universityId" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">🎓 المعلومات الدراسية</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الكلية <span class="required">*</span></label>
+                                <select name="college" class="form-control college-select" required>
+                                    <option value="">اختر الكلية</option>
+                                    <option value="engineering">كلية الهندسة</option>
+                                    <option value="medicine">كلية الطب</option>
+                                    <option value="science">كلية العلوم</option>
+                                    <option value="arts">كلية الآداب</option>
+                                    <option value="law">كلية القانون</option>
+                                    <option value="business">كلية الإدارة والاقتصاد</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>القسم <span class="required">*</span></label>
+                                <select name="department" class="form-control department-select" required>
+                                    <option value="">اختر القسم</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المرحلة الدراسية <span class="required">*</span></label>
+                                <select name="stage" class="form-control" required>
+                                    <option value="">اختر المرحلة</option>
+                                    <option value="first">المرحلة الأولى</option>
+                                    <option value="second">المرحلة الثانية</option>
+                                    <option value="third">المرحلة الثالثة</option>
+                                    <option value="fourth">المرحلة الرابعة</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>نوع الدراسة <span class="required">*</span></label>
+                                <select name="studyType" class="form-control" required>
+                                    <option value="">اختر نوع الدراسة</option>
+                                    <option value="morning">صباحي</option>
+                                    <option value="evening">مسائي</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">📄 تفاصيل الطلب</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>عدد النسخ <span class="required">*</span></label>
+                                <input type="number" name="copies" class="form-control" required 
+                                       min="1" max="10" value="1">
+                            </div>
+                            <div class="form-group">
+                                <label>الغرض من الطلب <span class="required">*</span></label>
+                                <select name="purpose" class="form-control" required>
+                                    <option value="">اختر الغرض</option>
+                                    <option value="employment">التوظيف</option>
+                                    <option value="postgraduate">الدراسات العليا</option>
+                                    <option value="scholarship">منحة دراسية</option>
+                                    <option value="other">أخرى</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">📤 إرسال الطلب</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ نموذج تأجيل دراسة ============ -->
+    <div id="postponementPage" class="page form-page">
+        <div class="container">
+            <button class="back-btn" onclick="goHome()">→ العودة للخدمات</button>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <span class="form-icon">⏸️</span>
+                    <h2>طلب تأجيل دراسة</h2>
+                    <p>تأجيل الفصل الدراسي الحالي</p>
+                </div>
+
+                <div id="postponementSuccess" class="alert alert-success" style="display: none;"></div>
+                <div id="postponementError" class="alert alert-error" style="display: none;"></div>
+
+                <form id="postponementForm">
+                    <div class="form-section">
+                        <h3 class="section-heading">📋 المعلومات الشخصية</h3>
+                        
+                        <div class="form-group">
+                            <label>الاسم الرباعي الكامل <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الرقم الجامعي <span class="required">*</span></label>
+                                <input type="text" name="universityId" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">🎓 المعلومات الدراسية</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الكلية <span class="required">*</span></label>
+                                <select name="college" class="form-control college-select" required>
+                                    <option value="">اختر الكلية</option>
+                                    <option value="engineering">كلية الهندسة</option>
+                                    <option value="medicine">كلية الطب</option>
+                                    <option value="science">كلية العلوم</option>
+                                    <option value="arts">كلية الآداب</option>
+                                    <option value="law">كلية القانون</option>
+                                    <option value="business">كلية الإدارة والاقتصاد</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>القسم <span class="required">*</span></label>
+                                <select name="department" class="form-control department-select" required>
+                                    <option value="">اختر القسم</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المرحلة الدراسية <span class="required">*</span></label>
+                                <select name="stage" class="form-control" required>
+                                    <option value="">اختر المرحلة</option>
+                                    <option value="first">المرحلة الأولى</option>
+                                    <option value="second">المرحلة الثانية</option>
+                                    <option value="third">المرحلة الثالثة</option>
+                                    <option value="fourth">المرحلة الرابعة</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>نوع الدراسة <span class="required">*</span></label>
+                                <select name="studyType" class="form-control" required>
+                                    <option value="">اختر نوع الدراسة</option>
+                                    <option value="morning">صباحي</option>
+                                    <option value="evening">مسائي</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">⏸️ سبب التأجيل</h3>
+                        
+                        <div class="form-group">
+                            <label>سبب التأجيل <span class="required">*</span></label>
+                            <select name="reason" class="form-control" required>
+                                <option value="">اختر السبب</option>
+                                <option value="health">أسباب صحية</option>
+                                <option value="family">أسباب عائلية</option>
+                                <option value="financial">أسباب مالية</option>
+                                <option value="work">أسباب عمل</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>شرح مفصل للسبب <span class="required">*</span></label>
+                            <textarea name="reasonDetails" class="form-control" rows="5" required></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">📤 إرسال طلب التأجيل</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ نموذج الايميل الجامعي ============ -->
+    <div id="universityEmailPage" class="page form-page">
+        <div class="container">
+            <button class="back-btn" onclick="goHome()">→ العودة للخدمات</button>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <span class="form-icon">📧</span>
+                    <h2>طلب الايميل الجامعي</h2>
+                    <p>إنشاء أو استرجاع البريد الإلكتروني الجامعي</p>
+                </div>
+
+                <div id="universityEmailSuccess" class="alert alert-success" style="display: none;"></div>
+                <div id="universityEmailError" class="alert alert-error" style="display: none;"></div>
+
+                <form id="universityEmailForm">
+                    <div class="form-section">
+                        <h3 class="section-heading">📋 المعلومات الشخصية</h3>
+                        
+                        <div class="form-group">
+                            <label>الاسم الرباعي الكامل <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الرقم الجامعي <span class="required">*</span></label>
+                                <input type="text" name="universityId" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>البريد الإلكتروني الشخصي <span class="required">*</span></label>
+                            <input type="email" name="personalEmail" class="form-control" required 
+                                   placeholder="example@gmail.com">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">🎓 المعلومات الدراسية</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الكلية <span class="required">*</span></label>
+                                <select name="college" class="form-control" required>
+                                    <option value="">اختر الكلية</option>
+                                    <option value="engineering">كلية الهندسة</option>
+                                    <option value="medicine">كلية الطب</option>
+                                    <option value="science">كلية العلوم</option>
+                                    <option value="arts">كلية الآداب</option>
+                                    <option value="law">كلية القانون</option>
+                                    <option value="business">كلية الإدارة والاقتصاد</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>المرحلة الدراسية <span class="required">*</span></label>
+                                <select name="stage" class="form-control" required>
+                                    <option value="">اختر المرحلة</option>
+                                    <option value="first">المرحلة الأولى</option>
+                                    <option value="second">المرحلة الثانية</option>
+                                    <option value="third">المرحلة الثالثة</option>
+                                    <option value="fourth">المرحلة الرابعة</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">📧 تفاصيل الطلب</h3>
+                        
+                        <div class="form-group">
+                            <label>نوع الطلب <span class="required">*</span></label>
+                            <select name="requestType" class="form-control" required>
+                                <option value="">اختر نوع الطلب</option>
+                                <option value="new">إنشاء ايميل جديد</option>
+                                <option value="reset">استرجاع كلمة المرور</option>
+                                <option value="change">تغيير كلمة المرور</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>ملاحظات إضافية</label>
+                            <textarea name="notes" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">📤 إرسال الطلب</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ نموذج الشكاوى ============ -->
+    <div id="complaintPage" class="page form-page">
+        <div class="container">
+            <button class="back-btn" onclick="goHome()">→ العودة للخدمات</button>
+            
+            <div class="form-container">
+                <div class="form-header">
+                    <span class="form-icon">📝</span>
+                    <h2>الشكاوى والمقترحات</h2>
+                    <p>نحن نستمع إليك - قدم شكواك أو اقتراحك</p>
+                </div>
+
+                <div id="complaintSuccess" class="alert alert-success" style="display: none;"></div>
+                <div id="complaintError" class="alert alert-error" style="display: none;"></div>
+
+                <form id="complaintForm">
+                    <div class="form-section">
+                        <h3 class="section-heading">📋 معلومات مقدم الطلب</h3>
+                        
+                        <div class="form-group">
+                            <label>الاسم الرباعي الكامل <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الرقم الجامعي / الوظيفي</label>
+                                <input type="text" name="universityId" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" name="phone" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>البريد الإلكتروني <span class="required">*</span></label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>الصفة <span class="required">*</span></label>
+                            <select name="userType" class="form-control" required>
+                                <option value="">اختر الصفة</option>
+                                <option value="student">طالب</option>
+                                <option value="staff">موظف</option>
+                                <option value="faculty">تدريسي</option>
+                                <option value="visitor">زائر</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-heading">📝 تفاصيل الشكوى / الاقتراح</h3>
+                        
+                        <div class="form-group">
+                            <label>نوع الطلب <span class="required">*</span></label>
+                            <select name="complaintType" class="form-control" required>
+                                <option value="">اختر النوع</option>
+                                <option value="complaint">شكوى</option>
+                                <option value="suggestion">اقتراح</option>
+                                <option value="inquiry">استفسار</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>القسم المعني <span class="required">*</span></label>
+                            <select name="department" class="form-control" required>
+                                <option value="">اختر القسم</option>
+                                <option value="registration">التسجيل</option>
+                                <option value="it">تكنولوجيا المعلومات</option>
+                                <option value="library">المكتبة</option>
+                                <option value="dormitory">السكن الجامعي</option>
+                                <option value="finance">الشؤون المالية</option>
+                                <option value="other">أخرى</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>عنوان الشكوى / الاقتراح <span class="required">*</span></label>
+                            <input type="text" name="subject" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>التفاصيل الكاملة <span class="required">*</span></label>
+                            <textarea name="details" class="form-control" rows="6" required 
+                                      placeholder="اشرح المشكلة أو الاقتراح بالتفصيل..."></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">📤 إرسال الشكوى / الاقتراح</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ JavaScript ============ -->
+    <script>
+        // ============ إعدادات Firebase ============
+        // ⚠️ ضع إعداداتك هنا من Firebase Console
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxxxxxxxxxxxxxxxxxxxxx",
+            authDomain: "student-services-xxxxx.firebaseapp.com",
+            databaseURL: "https://student-services-xxxxx-default-rtdb.firebaseio.com",
+            projectId: "student-services-xxxxx",
+            storageBucket: "student-services-xxxxx.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ============ خريطة الأقسام ============
+        const departmentsMap = {
+            engineering: ['هندسة مدنية', 'هندسة ميكانيكية', 'هندسة كهربائية', 'هندسة حاسوب'],
+            medicine: ['الطب العام', 'الطب الباطني', 'طب الأطفال'],
+            dentistry: ['طب الأسنان العام', 'تقويم الأسنان'],
+            pharmacy: ['الصيدلة العامة', 'الصيدلة السريرية'],
+            science: ['علوم الحياة', 'الكيمياء', 'الفيزياء', 'الرياضيات'],
+            computer: ['علوم الحاسوب', 'نظم المعلومات', 'الذكاء الاصطناعي'],
+            arts: ['اللغة العربية', 'اللغة الإنجليزية', 'التاريخ', 'الجغرافيا'],
+            law: ['القانون العام', 'القانون الخاص'],
+            business: ['إدارة الأعمال', 'المحاسبة', 'الاقتصاد'],
+            education: ['التربية العامة', 'علم النفس', 'المناهج']
+        };
+
+        // ============ التنقل بين الصفحات ============
+        function showForm(serviceName) {
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById(serviceName + 'Page').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function goHome() {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById('homePage').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // ============ ربط الأقسام بالكليات ============
+        document.querySelectorAll('.college-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const college = this.value;
+                const form = this.closest('form');
+                const departmentSelect = form.querySelector('.department-select');
+                
+                departmentSelect.innerHTML = '<option value="">اختر القسم</option>';
+                
+                if (college && departmentsMap[college]) {
+                    departmentsMap[college].forEach(dept => {
+                        const option = document.createElement('option');
+                        option.value = dept;
+                        option.textContent = dept;
+                        departmentSelect.appendChild(option);
+                    });
+                }
+            });
+        });
+
+        // ============ إرسال الطلبات ============
+        function submitRequest(serviceType, formData, successId, errorId) {
+            const requestData = {
+                ...formData,
+                serviceType: serviceType,
+                status: 'pending',
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            return database.ref('requests').push(requestData)
+                .then(() => {
+                    const successDiv = document.getElementById(successId);
+                    successDiv.textContent = '✅ تم إرسال طلبك بنجاح!';
+                    successDiv.style.display = 'block';
+                    
+                    const errorDiv = document.getElementById(errorId);
+                    errorDiv.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        successDiv.style.display = 'none';
+                    }, 5000);
+                })
+                .catch((error) => {
+                    const errorDiv = document.getElementById(errorId);
+                    errorDiv.textContent = '❌ حدث خطأ: ' + error.message;
+                    errorDiv.style.display = 'block';
+                });
+        }
+
+        // ============ معالجة النماذج ============
+        function handleForm(formId, serviceType, successId, errorId) {
+            const form = document.getElementById(formId);
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const data = {};
+                
+                formData.forEach((value, key) => {
+                    data[key] = value;
+                });
+                
+                const submitBtn = form.querySelector('.submit-btn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ جاري الإرسال...';
+                
+                submitRequest(serviceType, data, successId, errorId)
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '📤 إرسال الطلب';
+                    });
+            });
+        }
+
+        // ============ تفعيل النماذج ============
+        handleForm('studentIdForm', 'student_id', 'studentIdSuccess', 'studentIdError');
+        handleForm('staffIdForm', 'staff_id', 'staffIdSuccess', 'staffIdError');
+        handleForm('continuationForm', 'continuation', 'continuationSuccess', 'continuationError');
+        handleForm('transcriptForm', 'transcript', 'transcriptSuccess', 'transcriptError');
+        handleForm('postponementForm', 'postponement', 'postponementSuccess', 'postponementError');
+        handleForm('universityEmailForm', 'university_email', 'universityEmailSuccess', 'universityEmailError');
+        handleForm('complaintForm', 'complaint', 'complaintSuccess', 'complaintError');
+    </script>
+</body>
+</html>
