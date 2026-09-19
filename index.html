@@ -892,8 +892,6 @@
 <script>
 // ═══════════════════════════════════════════════════════
 // إعدادات Supabase
-// ⚠️ استخدم المفتاح القديم (Legacy anon) من:
-// Settings → API Keys → Legacy anon, service_role API keys
 // ═══════════════════════════════════════════════════════
 const SUPABASE_URL = "https://ewivzdrrujuwhkuqqgei.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3aXZ6ZHJydWp1d2hrdXFxZ2VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1OTMwNDQsImV4cCI6MjEwNTE2OTA0NH0.ng8N-08Pl2SOr42Dw01fLSG6n8C17BNTG5XDVPdisM8";
@@ -909,6 +907,7 @@ let currentService = null;
 let currentFormData = {};
 let currentStudent = null;
 let qrScanner = null;
+let servicesData = [];
 
 // ═══════════════════════════════════════════════════════
 // جزيئات الخلفية
@@ -977,6 +976,7 @@ function openPage(pageId) {
 function closePage(pageId) {
     document.getElementById(pageId).classList.remove('active');
     document.body.style.overflow = 'auto';
+    stopScanner();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -994,23 +994,24 @@ async function loadServices() {
         
         if (error) throw error;
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="alert alert-info">لا توجد خدمات متاحة حالياً</div>';
             return;
         }
         
-        container.innerHTML = data.map(s => {
+        // خزّن البيانات في متغير عام
+        servicesData = data;
+        
+        container.innerHTML = data.map((s, index) => {
             const isLive = s.status === 'live';
             const badge = isLive 
                 ? '<span class="badge-live">متاح الآن</span>' 
                 : '<span class="badge-soon">قريباً</span>';
             
-            const onclick = isLive 
-                ? `onclick="selectService('${s.service_id}', '${s.service_name.replace(/'/g, "\\'")}', '${(s.form_fields || '[]').replace(/'/g, "\\'")}')"`
-                : '';
+            const clickAttr = isLive ? `onclick="handleServiceClick(${index})"` : '';
             
             return `
-                <div class="service-card ${!isLive ? 'soon' : ''}" ${onclick}>
+                <div class="service-card ${!isLive ? 'soon' : ''}" ${clickAttr}>
                     <div class="service-icon">
                         <i class="fas fa-${s.icon || 'file'}"></i>
                     </div>
@@ -1031,21 +1032,27 @@ async function loadServices() {
 }
 
 // ═══════════════════════════════════════════════════════
-// فتح خدمة HEPIQ
+// عند النقر على خدمة
 // ═══════════════════════════════════════════════════════
-async function openServiceFromHepiq() {
-    const { data, error } = await supabaseClient
-        .from("services")
-        .select("*")
-        .eq("service_id", "S008")
-        .single();
+function handleServiceClick(index) {
+    const s = servicesData[index];
+    if (!s || s.status !== 'live') return;
     
-    if (error || !data) {
+    selectService(s.service_id, s.service_name, s.form_fields || "[]");
+}
+
+// ═══════════════════════════════════════════════════════
+// فتح خدمة HEPIQ (من الزر الكبير)
+// ═══════════════════════════════════════════════════════
+function openServiceFromHepiq() {
+    const s = servicesData.find(x => x.service_id === "S008");
+    
+    if (!s) {
         alert("الخدمة غير متاحة حالياً");
         return;
     }
     
-    selectService(data.service_id, data.service_name, data.form_fields || "[]");
+    selectService(s.service_id, s.service_name, s.form_fields || "[]");
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1054,8 +1061,13 @@ async function openServiceFromHepiq() {
 function selectService(serviceId, serviceName, formFields) {
     let fields = [];
     try {
-        fields = JSON.parse(formFields || "[]");
+        if (Array.isArray(formFields)) {
+            fields = formFields;
+        } else {
+            fields = JSON.parse(formFields || "[]");
+        }
     } catch(e) {
+        console.error("خطأ في JSON:", e, formFields);
         fields = [];
     }
     
@@ -1113,8 +1125,14 @@ function goToVerify() {
     openPage('page-verify');
 }
 
-function backToForm() { openPage('page-form'); }
-function backToVerify() { openPage('page-verify'); }
+function backToForm() {
+    stopScanner();
+    openPage('page-form');
+}
+
+function backToVerify() {
+    openPage('page-verify');
+}
 
 // ═══════════════════════════════════════════════════════
 // QR Scanner
@@ -1147,17 +1165,26 @@ async function startScanner() {
 
 async function stopScanner() {
     if (qrScanner) {
-        try { await qrScanner.stop(); } catch(e) {}
+        try { 
+            await qrScanner.stop(); 
+            await qrScanner.clear();
+        } catch(e) {}
         qrScanner = null;
     }
     const btn = document.getElementById('btn-start-scan');
-    btn.innerHTML = '<i class="fas fa-camera"></i> بدء مسح الهوية';
-    btn.onclick = startScanner;
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-camera"></i> بدء مسح الهوية';
+        btn.onclick = startScanner;
+        btn.disabled = false;
+    }
 }
 
 async function onScanSuccess(decodedText) {
     if (qrScanner) {
-        try { await qrScanner.stop(); } catch(e) {}
+        try { 
+            await qrScanner.stop(); 
+            await qrScanner.clear();
+        } catch(e) {}
         qrScanner = null;
     }
     
@@ -1175,8 +1202,12 @@ async function onScanSuccess(decodedText) {
 // إدخال يدوي
 // ═══════════════════════════════════════════════════════
 function showManualInput() {
+    stopScanner();
     openPage('page-manual');
-    setTimeout(() => document.getElementById('manual-reg-id').focus(), 300);
+    setTimeout(() => {
+        const input = document.getElementById('manual-reg-id');
+        if (input) input.focus();
+    }, 300);
 }
 
 async function submitManualInput() {
@@ -1241,8 +1272,10 @@ async function verifyStudent(regId) {
         `;
         
     } catch (err) {
+        console.error("خطأ:", err);
         document.getElementById('student-info').innerHTML = 
-            '<div class="alert alert-error">❌ خطأ في الاتصال</div>';
+            '<div class="alert alert-error">❌ خطأ في الاتصال</div>' +
+            '<button class="secondary-btn" onclick="location.reload()">🔄 حاول مرة أخرى</button>';
     }
 }
 
@@ -1280,6 +1313,7 @@ async function finalSubmit() {
         document.getElementById('success-request-id').textContent = "رقم الطلب: " + requestId;
         
     } catch (err) {
+        console.error("خطأ:", err);
         alert("❌ خطأ في الإرسال: " + (err.message || err));
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب النهائي';
