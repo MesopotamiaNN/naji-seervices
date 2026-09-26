@@ -174,7 +174,6 @@
 
         .header p { font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
 
-        /* ✅ زر طلباتي */
         .my-requests-btn {
             display: flex;
             align-items: center;
@@ -559,6 +558,8 @@
 
         .form-control:focus { border-color: var(--primary-light); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
 
+        select.form-control { cursor: pointer; }
+
         textarea.form-control { resize: vertical; min-height: 80px; }
 
         input[type="file"].form-control { padding: 8px; cursor: pointer; }
@@ -670,6 +671,7 @@
 
         .alert-info { background: rgba(59, 130, 246, 0.15); color: #2563eb; border: 1px solid #3b82f6; }
         .alert-error { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid #ef4444; }
+        .alert-warning { background: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid #f59e0b; }
 
         .success-msg {
             text-align: center;
@@ -727,9 +729,6 @@
 
         .step-dot.done { background: #10b981; border-color: #10b981; color: white; }
 
-        /* ═══════════════════════════════════════════════════════ */
-        /* ✅ بطاقات طلباتي                                      */
-        /* ═══════════════════════════════════════════════════════ */
         .my-req-card {
             background: var(--card-bg);
             border-radius: var(--radius-sm);
@@ -848,6 +847,27 @@
             font-weight: 600;
         }
 
+        .duplicate-warning {
+            background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1));
+            border: 2px solid #ef4444;
+            border-radius: var(--radius-sm);
+            padding: 15px;
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .duplicate-warning h4 {
+            color: #dc2626;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        .duplicate-warning p {
+            font-size: 0.82rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
         .hidden { display: none !important; }
         .loading { text-align: center; padding: 20px; color: var(--text-light); }
 
@@ -893,7 +913,6 @@
             <p>بوابة الخدمات الإلكترونية</p>
         </div>
 
-        <!-- ✅ زر طلباتي -->
         <button class="my-requests-btn" onclick="openPage('page-my-requests')">
             <i class="fas fa-clipboard-list"></i>
             📋 طلباتي — تابع حالة طلباتك
@@ -973,7 +992,7 @@
             <div class="form-group">
                 <label>رقم التسجيل</label>
                 <input type="number" id="my-req-reg-id" class="form-control" 
-                       placeholder="****"
+                       placeholder="مثال: 1001"
                        onkeypress="if(event.key==='Enter') loadMyRequests()">
             </div>
 
@@ -1072,7 +1091,7 @@
 
             <div class="form-group">
                 <label>رقم التسجيل</label>
-                <input type="number" id="manual-reg-id" class="form-control" placeholder="مثال: ****">
+                <input type="number" id="manual-reg-id" class="form-control" placeholder="مثال: 1001">
             </div>
 
             <button class="submit-btn" onclick="submitManualInput()">
@@ -1141,6 +1160,8 @@ let qrScanner = null;
 let servicesData = [];
 let currentImageFile = null;
 
+const DYNAMIC_SERVICE = 'S010';
+
 // ═══════════════════════════════════════════════════════
 // خرائط الحالة
 // ═══════════════════════════════════════════════════════
@@ -1155,8 +1176,62 @@ const STATUS_INFO = {
 const SERVICE_ICONS_MAP = {
     "S001": "📄", "S002": "📧", "S003": "🎓", "S004": "🪪",
     "S005": "⏸️", "S006": "🏥", "S007": "🔄", "S008": "📱",
-    "S009": "⏰",
+    "S009": "⏰", "S010": "🏛️", "S012": "🎓",
 };
+
+// ═══════════════════════════════════════════════════════
+// ✅ التحقق من وجود طلب سابق (منع التكرار)
+// ═══════════════════════════════════════════════════════
+async function checkDuplicateRequest(regId, serviceId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from("requests")
+            .select("request_id, status, timestamp")
+            .eq("reg_id", regId)
+            .eq("service_id", serviceId)
+            .in("status", ["pending", "approved", "ready"])
+            .limit(1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            return data[0];
+        }
+        return null;
+    } catch (err) {
+        console.error("خطأ التحقق:", err);
+        return null;
+    }
+}
+
+// ✅ التحقق من التكرار للزوار (برقم الهاتف)
+async function checkDuplicateByPhone(phone, serviceId) {
+    if (!phone) return null;
+    try {
+        const { data, error } = await supabaseClient
+            .from("requests")
+            .select("request_id, status, timestamp, form_data")
+            .eq("service_id", serviceId)
+            .in("status", ["pending", "approved", "ready"]);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+            for (const req of data) {
+                try {
+                    const fd = JSON.parse(req.form_data || '{}');
+                    if (fd['رقم الهاتف'] && fd['رقم الهاتف'].includes(phone)) {
+                        return req;
+                    }
+                } catch(e) {}
+            }
+        }
+        return null;
+    } catch (err) {
+        console.error("خطأ التحقق بالهاتف:", err);
+        return null;
+    }
+}
 
 // ═══════════════════════════════════════════════════════
 // جزيئات الخلفية
@@ -1229,7 +1304,7 @@ function closePage(pageId) {
 }
 
 // ═══════════════════════════════════════════════════════
-// ✅ طلباتي — تحميل وعرض
+// طلباتي
 // ═══════════════════════════════════════════════════════
 async function loadMyRequests() {
     const regIdInput = document.getElementById('my-req-reg-id');
@@ -1247,7 +1322,6 @@ async function loadMyRequests() {
     result.innerHTML = '<div class="loading">⏳ جاري جلب طلباتك...</div>';
 
     try {
-        // التحقق من وجود الطالب
         const { data: student, error: sErr } = await supabaseClient
             .from("students")
             .select("reg_id, name, dept, college, stage, study_type")
@@ -1262,7 +1336,6 @@ async function loadMyRequests() {
             return;
         }
 
-        // جلب طلباته
         const { data: requests, error: rErr } = await supabaseClient
             .from("requests")
             .select("*")
@@ -1271,7 +1344,6 @@ async function loadMyRequests() {
 
         if (rErr) throw rErr;
 
-        // إذا ما عنده طلبات
         if (!requests || requests.length === 0) {
             result.innerHTML = `
                 <div class="info-row" style="margin-bottom:15px;">
@@ -1287,7 +1359,6 @@ async function loadMyRequests() {
             return;
         }
 
-        // إحصائيات
         const stats = {
             total: requests.length,
             pending: requests.filter(r => r.status === 'pending').length,
@@ -1295,7 +1366,6 @@ async function loadMyRequests() {
             delivered: requests.filter(r => r.status === 'delivered').length,
         };
 
-        // بناء HTML
         let html = `
             <div class="info-row" style="margin-bottom:15px;">
                 <span class="info-label">👤 الطالب</span>
@@ -1341,14 +1411,10 @@ async function loadMyRequests() {
     btn.innerHTML = '<i class="fas fa-search"></i> عرض طلباتي';
 }
 
-// ═══════════════════════════════════════════════════════
-// ✅ بناء بطاقة الطلب
-// ═══════════════════════════════════════════════════════
 function renderMyRequestCard(req) {
     const st = STATUS_INFO[req.status] || STATUS_INFO['pending'];
     const icon = SERVICE_ICONS_MAP[req.service_id] || '📋';
 
-    // تنسيق التاريخ
     let dateStr = '';
     try {
         const dt = new Date(req.timestamp);
@@ -1364,7 +1430,6 @@ function renderMyRequestCard(req) {
 
     let html = `<div class="my-req-card ${req.status}">`;
 
-    // ✅ بانر "جاهز للاستلام"
     if (req.status === 'ready') {
         html += `
             <div class="my-req-ready-banner">
@@ -1373,7 +1438,6 @@ function renderMyRequestCard(req) {
         `;
     }
 
-    // الرأس
     html += `
         <div class="my-req-head">
             <div class="my-req-service">${icon} ${req.service_name || ''}</div>
@@ -1383,7 +1447,6 @@ function renderMyRequestCard(req) {
         </div>
     `;
 
-    // المعلومات
     html += `
         <div class="my-req-info">
             <span>🕐 ${dateStr}</span>
@@ -1392,7 +1455,6 @@ function renderMyRequestCard(req) {
         </div>
     `;
 
-    // ملاحظة الموظف (إذا موجودة)
     if (req.employee_note) {
         html += `
             <div class="my-req-note">
@@ -1551,7 +1613,9 @@ function openServiceFromHepiq() {
     }
     selectService(s.service_id, s.service_name, s.form_fields || "[]");
 }
-
+// ═══════════════════════════════════════════════════════
+// اختيار خدمة
+// ═══════════════════════════════════════════════════════
 function selectService(serviceId, serviceName, formFields) {
     let fields = [];
     try {
@@ -1582,6 +1646,21 @@ function selectService(serviceId, serviceName, formFields) {
         container.innerHTML = '<div class="alert alert-info">لا توجد بيانات مطلوبة. اضغط "متابعة للتحقق".</div>';
     } else {
         container.innerHTML = fields.map(f => {
+            if (f.startsWith('select:')) {
+                const parts = f.replace('select:', '').split('|');
+                const label = parts[0];
+                const options = parts.slice(1);
+                return `
+                    <div class="form-group">
+                        <label>${label}</label>
+                        <select class="form-control" data-field="${f}" 
+                                onchange="onSelectChange(event)">
+                            <option value="">— اختر —</option>
+                            ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
             if (f.startsWith('image:')) {
                 const label = f.replace('image:', '');
                 return `
@@ -1616,14 +1695,65 @@ function selectService(serviceId, serviceName, formFields) {
         }).join('');
     }
     
+    if (serviceId === DYNAMIC_SERVICE) {
+        setupDynamicService();
+    }
+    
+    const submitBtn = document.querySelector('#page-form .submit-btn');
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
+    }
+    
     openPage('page-form');
 }
 
+function setupDynamicService() {
+    const nameField = document.querySelector('[data-field="الاسم الرباعي"]');
+    const phoneField = document.querySelector('[data-field="رقم الهاتف"]');
+    
+    if (nameField) nameField.closest('.form-group').style.display = 'none';
+    if (phoneField) phoneField.closest('.form-group').style.display = 'none';
+}
+
+function onSelectChange(event) {
+    if (!currentService || currentService.id !== DYNAMIC_SERVICE) return;
+    
+    const val = event.target.value;
+    const nameField = document.querySelector('[data-field="الاسم الرباعي"]');
+    const phoneField = document.querySelector('[data-field="رقم الهاتف"]');
+    
+    const showExtra = (val === 'قبول جديد');
+    
+    if (nameField) nameField.closest('.form-group').style.display = showExtra ? 'block' : 'none';
+    if (phoneField) phoneField.closest('.form-group').style.display = showExtra ? 'block' : 'none';
+    
+    const submitBtn = document.querySelector('#page-form .submit-btn');
+    if (submitBtn) {
+        if (showExtra) {
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
+        } else {
+            submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// المتابعة للتحقق
+// ═══════════════════════════════════════════════════════
 function goToVerify() {
     currentFormData = {};
     if (currentService.fields.length > 0) {
         for (const f of currentService.fields) {
             const input = document.querySelector(`[data-field="${f}"]`);
+            
+            if (f.startsWith('select:')) {
+                if (!input || !input.value) {
+                    alert(`⚠️ الرجاء اختيار: ${f.replace('select:','').split('|')[0]}`);
+                    return;
+                }
+                currentFormData[f] = input.value;
+                continue;
+            }
             
             if (f.startsWith('image:')) {
                 if (!currentImageFile) {
@@ -1638,11 +1768,43 @@ function goToVerify() {
         }
     }
     
+    if (currentService.id === DYNAMIC_SERVICE) {
+        const selKey = currentService.fields.find(f => f.startsWith('select:'));
+        const type = currentFormData[selKey];
+        
+        if (type === 'قبول جديد') {
+            const required = ['الاسم الرباعي', 'رقم الهاتف', 'موضوع الطلب', 'تفاصيل الطلب'];
+            for (const f of required) {
+                if (!currentFormData[f] || !currentFormData[f].trim()) {
+                    alert(`⚠️ الرجاء إدخال: ${f}`);
+                    return;
+                }
+            }
+            submitVisitorRequest();
+            return;
+        }
+        
+        if (type === 'طالب منتسب') {
+            const required = ['موضوع الطلب', 'تفاصيل الطلب'];
+            for (const f of required) {
+                if (!currentFormData[f] || !currentFormData[f].trim()) {
+                    alert(`⚠️ الرجاء إدخال: ${f}`);
+                    return;
+                }
+            }
+            delete currentFormData['الاسم الرباعي'];
+            delete currentFormData['رقم الهاتف'];
+        }
+    }
+    
     document.getElementById('summary-service').textContent = currentService.name;
     
     let fieldsHtml = '';
     for (const [key, value] of Object.entries(currentFormData)) {
-        const displayKey = key.replace('image:', '📷 ').replace('notes:', '📝 ');
+        const displayKey = key
+            .replace('image:', '📷 ')
+            .replace('notes:', '📝 ')
+            .replace('select:', '');
         fieldsHtml += `
             <div class="summary-row">
                 <span>${displayKey}:</span>
@@ -1664,6 +1826,9 @@ function backToVerify() {
     openPage('page-verify');
 }
 
+// ═══════════════════════════════════════════════════════
+// QR Scanner
+// ═══════════════════════════════════════════════════════
 async function startScanner() {
     const btn = document.getElementById('btn-start-scan');
     btn.disabled = true;
@@ -1725,6 +1890,9 @@ async function onScanSuccess(decodedText) {
     await verifyStudent(regId);
 }
 
+// ═══════════════════════════════════════════════════════
+// إدخال يدوي
+// ═══════════════════════════════════════════════════════
 function showManualInput() {
     stopScanner();
     openPage('page-manual');
@@ -1745,6 +1913,9 @@ async function submitManualInput() {
     await verifyStudent(regId);
 }
 
+// ═══════════════════════════════════════════════════════
+// ✅ التحقق من الطالب (مع منع التكرار)
+// ═══════════════════════════════════════════════════════
 async function verifyStudent(regId) {
     openPage('page-confirm');
     document.getElementById('student-info').innerHTML = '<div class="loading">⏳ جاري التحقق...</div>';
@@ -1764,6 +1935,35 @@ async function verifyStudent(regId) {
         }
         
         currentStudent = data;
+        
+        // ✅ التحقق من التكرار
+        const duplicate = await checkDuplicateRequest(data.reg_id, currentService.id);
+        
+        let warningHtml = '';
+        let blockSubmit = false;
+        
+        if (duplicate) {
+            const statusMap = {
+                'pending': '⏳ قيد المراجعة',
+                'approved': '✅ موافق عليه',
+                'ready': '📦 جاهز للاستلام'
+            };
+            const statusTxt = statusMap[duplicate.status] || duplicate.status;
+            
+            warningHtml = `
+                <div class="duplicate-warning">
+                    <h4>⚠️ لديك طلب سابق على هذه الخدمة</h4>
+                    <p>
+                        <strong>رقم الطلب:</strong> ${duplicate.request_id}<br>
+                        <strong>الحالة:</strong> ${statusTxt}<br>
+                        <span style="color:#64748b; font-size:0.8rem;">
+                            يمكنك تقديم طلب جديد بعد الانتهاء من الطلب الحالي.
+                        </span>
+                    </p>
+                </div>
+            `;
+            blockSubmit = true;
+        }
         
         document.getElementById('student-info').innerHTML = `
             <div class="info-row">
@@ -1790,7 +1990,22 @@ async function verifyStudent(regId) {
                 <span class="info-label">نوع الدراسة</span>
                 <span class="info-value">${data.study_type || '-'}</span>
             </div>
+            ${warningHtml}
         `;
+        
+        // ✅ قفل زر الإرسال إذا فيه طلب سابق
+        const submitBtn = document.getElementById('btn-final-submit');
+        if (blockSubmit) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '🔒 لديك طلب سابق على هذه الخدمة';
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب النهائي';
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
         
     } catch (err) {
         console.error("خطأ:", err);
@@ -1800,6 +2015,9 @@ async function verifyStudent(regId) {
     }
 }
 
+// ═══════════════════════════════════════════════════════
+// الإرسال النهائي (طالب مسجل)
+// ═══════════════════════════════════════════════════════
 async function finalSubmit() {
     const btn = document.getElementById('btn-final-submit');
     btn.disabled = true;
@@ -1807,6 +2025,15 @@ async function finalSubmit() {
     
     try {
         const requestId = "REQ-" + Date.now().toString().slice(-8);
+        
+        // ✅ تحقق أخير من التكرار
+        const dup = await checkDuplicateRequest(currentStudent.reg_id, currentService.id);
+        if (dup) {
+            alert("⚠️ لديك طلب سابق على هذه الخدمة!\nلا يمكن تقديم طلب جديد.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب النهائي';
+            return;
+        }
         
         let imageUrl = null;
         let imageName = null;
@@ -1871,6 +2098,91 @@ async function finalSubmit() {
     }
 }
 
+// ═══════════════════════════════════════════════════════
+// ✅ إرسال طلب الزائر (مع منع التكرار)
+// ═══════════════════════════════════════════════════════
+async function submitVisitorRequest() {
+    const btn = document.querySelector('#page-form .submit-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+    }
+    
+    try {
+        const phone = currentFormData['رقم الهاتف'];
+        
+        // ✅ التحقق من التكرار برقم الهاتف
+        if (phone) {
+            const dup = await checkDuplicateByPhone(phone, currentService.id);
+            if (dup) {
+                const statusMap = {
+                    'pending': '⏳ قيد المراجعة',
+                    'approved': '✅ موافق عليه',
+                    'ready': '📦 جاهز للاستلام'
+                };
+                const st = statusMap[dup.status] || dup.status;
+                alert(`⚠️ لديك طلب سابق بنفس رقم الهاتف!\n\n` +
+                      `رقم الطلب: ${dup.request_id}\n` +
+                      `الحالة: ${st}\n\n` +
+                      `لا يمكن تقديم طلب جديد قبل إكمال الطلب الحالي.`);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
+                }
+                return;
+            }
+        }
+        
+        const requestId = "REQ-" + Date.now().toString().slice(-8);
+        const visitorName = currentFormData['الاسم الرباعي'] || 'زائر';
+        
+        const { data, error } = await supabaseClient
+            .from("requests")
+            .insert({
+                request_id: requestId,
+                reg_id: null,
+                student_name: visitorName,
+                dept: null,
+                college: null,
+                service_id: currentService.id,
+                service_name: currentService.name,
+                form_data: JSON.stringify(currentFormData),
+                image_url: null,
+                image_name: null,
+                financial_ok: false,
+                status: "pending"
+            })
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        const successTitle = document.querySelector('.success-msg h2');
+        const successText = document.querySelector('.success-msg p');
+        successTitle.textContent = '✅ تم إرسال طلبك';
+        successText.innerHTML = '📞 سيتم التواصل معك على الرقم<br>' +
+            '<strong style="color:#10b981; font-size:1.1rem;">' +
+            (currentFormData['رقم الهاتف'] || '') + '</strong>' +
+            '<br>بعد مراجعة مكتب رئيس الجامعة';
+        
+        openPage('page-success');
+        document.getElementById('success-request-id').textContent = "رقم الطلب: " + requestId;
+        
+        currentFormData = {};
+        
+    } catch (err) {
+        console.error("خطأ:", err);
+        alert("❌ خطأ في الإرسال: " + (err.message || err));
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// التشغيل
+// ═══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
     createParticles();
     loadTheme();
