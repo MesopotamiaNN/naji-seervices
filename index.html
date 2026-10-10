@@ -241,8 +241,8 @@
 
         .social-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
             margin-bottom: 20px;
         }
 
@@ -250,7 +250,7 @@
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: var(--radius-sm);
-            padding: 18px 10px;
+            padding: 15px 8px;
             text-align: center;
             text-decoration: none;
             color: var(--text);
@@ -259,16 +259,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             border: 2px solid transparent;
         }
 
         .social-card:hover { transform: translateY(-8px) scale(1.05); box-shadow: var(--shadow-hover); }
-        .social-card i { font-size: 1.8rem; transition: var(--transition); }
+        .social-card i { font-size: 1.6rem; transition: var(--transition); }
         .social-card:hover i { transform: scale(1.3) rotate(8deg); }
-        .social-card span { font-size: 0.75rem; font-weight: 700; color: var(--text-light); }
+        .social-card span { font-size: 0.7rem; font-weight: 700; color: var(--text-light); }
         .social-card.website i { color: #2563eb; }
         .social-card.website:hover { border-color: #2563eb; }
+        .social-card.telegram i { color: #229ED9; }
+        .social-card.telegram:hover { border-color: #229ED9; }
         .social-card.instagram i { color: #e4405f; }
         .social-card.instagram:hover { border-color: #e4405f; }
         .social-card.facebook i { color: #1877f2; }
@@ -458,6 +460,25 @@
         }
 
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        /* ✅ شارة "تغلق قريباً" */
+        .badge-closing {
+            background: linear-gradient(135deg, #fed7aa, #fdba74);
+            color: #9a3412;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            animation: pulse 1.5s ease infinite;
+            border: 1px solid #f97316;
+        }
+
+        [data-theme="dark"] .badge-closing {
+            background: linear-gradient(135deg, #7c2d12, #9a3412);
+            color: #fed7aa;
+            border-color: #fb923c;
+        }
 
         .arrow-icon { color: var(--text-light); flex-shrink: 0; transition: var(--transition); }
         .service-card:hover .arrow-icon { transform: translateX(-8px); color: var(--primary-light); }
@@ -868,14 +889,64 @@
             line-height: 1.6;
         }
 
+        /* ✅ ملاحظة المستمسكات (لخدمة التقاعد) */
+        .documents-note {
+            background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08));
+            border: 2px solid #f59e0b;
+            border-right: 6px solid #ef4444;
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            margin-bottom: 18px;
+            direction: rtl;
+        }
+
+        .documents-note h4 {
+            color: #b45309;
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        [data-theme="dark"] .documents-note h4 { color: #fbbf24; }
+
+        .documents-note p {
+            color: var(--text);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .documents-note ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0;
+        }
+
+        .documents-note ul li {
+            color: var(--text);
+            font-size: 0.82rem;
+            padding: 6px 12px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 8px;
+            border-right: 3px solid #f59e0b;
+        }
+
+        [data-theme="dark"] .documents-note ul li {
+            background: rgba(255,255,255,0.05);
+        }
+
         .hidden { display: none !important; }
         .loading { text-align: center; padding: 20px; color: var(--text-light); }
 
         @media (max-width: 400px) {
-            .social-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .social-card { padding: 15px 8px; }
-            .social-card i { font-size: 1.5rem; }
-            .social-card span { font-size: 0.7rem; }
+            .social-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .social-card { padding: 12px 6px; }
+            .social-card i { font-size: 1.3rem; }
+            .social-card span { font-size: 0.65rem; }
             .header h1 { font-size: 1.3rem; }
             .service-card { padding: 15px; }
             .service-icon { width: 45px; height: 45px; font-size: 1.2rem; }
@@ -923,6 +994,10 @@
             <a href="https://alnaji-uni.edu.iq/" target="_blank" class="social-card website">
                 <i class="fas fa-globe"></i>
                 <span>الموقع الرسمي</span>
+            </a>
+            <a href="https://t.me/+Nh7fqNk9g3AzODAy" target="_blank" class="social-card telegram">
+                <i class="fab fa-telegram"></i>
+                <span>تيليگرام</span>
             </a>
             <a href="https://www.instagram.com/alnajiuniversity/" target="_blank" class="social-card instagram">
                 <i class="fab fa-instagram"></i>
@@ -1180,7 +1255,7 @@ const SERVICE_ICONS_MAP = {
 };
 
 // ═══════════════════════════════════════════════════════
-// ✅ التحقق من وجود طلب سابق (منع التكرار)
+// التحقق من وجود طلب سابق (منع التكرار)
 // ═══════════════════════════════════════════════════════
 async function checkDuplicateRequest(regId, serviceId) {
     try {
@@ -1204,7 +1279,6 @@ async function checkDuplicateRequest(regId, serviceId) {
     }
 }
 
-// ✅ التحقق من التكرار للزوار (برقم الهاتف)
 async function checkDuplicateByPhone(phone, serviceId) {
     if (!phone) return null;
     try {
@@ -1286,7 +1360,6 @@ function loadTheme() {
         themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
     }
 }
-
 // ═══════════════════════════════════════════════════════
 // إدارة الصفحات
 // ═══════════════════════════════════════════════════════
@@ -1462,8 +1535,7 @@ function renderMyRequestCard(req) {
             </div>
         `;
     }
-
-    html += `</div>`;
+html += `</div>`;
     return html;
 }
 
@@ -1572,12 +1644,21 @@ async function loadServices() {
         
         container.innerHTML = data.map((s, index) => {
             const isLive = s.status === 'live';
-            const badge = isLive 
-                ? '<span class="badge-live">متاح الآن</span>' 
-                : '<span class="badge-soon">قريباً</span>';
-            
+
+            // شارة "تغلق قريباً" لخدمة الاستضافة (بدون تغيير منطقها)
+            const isClosing = s.service_name && s.service_name.includes('استضافة');
+
+            let badge;
+            if (isClosing) {
+                badge = '<span class="badge-closing">⏰ تغلق قريباً</span>';
+            } else if (isLive) {
+                badge = '<span class="badge-live">متاح الآن</span>';
+            } else {
+                badge = '<span class="badge-soon">قريباً</span>';
+            }
+
             const clickAttr = isLive ? `onclick="handleServiceClick(${index})"` : '';
-            
+
             return `
                 <div class="service-card ${!isLive ? 'soon' : ''}" ${clickAttr}>
                     <div class="service-icon">
@@ -1613,6 +1694,7 @@ function openServiceFromHepiq() {
     }
     selectService(s.service_id, s.service_name, s.form_fields || "[]");
 }
+
 // ═══════════════════════════════════════════════════════
 // اختيار خدمة
 // ═══════════════════════════════════════════════════════
@@ -1628,7 +1710,15 @@ function selectService(serviceId, serviceName, formFields) {
         console.error("خطأ في JSON:", e, formFields);
         fields = [];
     }
-    
+
+    // احتياط: إضافة حقل "الجهة / الهيئة" لو غير موجود في القاعدة
+    if (serviceName && serviceName.includes('تقاعد')) {
+        const hasEntityField = fields.some(f => f.includes('الجهة') || f.includes('الهيئة'));
+        if (!hasEntityField) {
+            fields = [...fields, 'الجهة / الهيئة'];
+        }
+    }
+
     currentService = {
         id: serviceId,
         name: serviceName,
@@ -1641,11 +1731,27 @@ function selectService(serviceId, serviceName, formFields) {
     document.getElementById('form-title').textContent = serviceName;
     
     const container = document.getElementById('form-fields');
+
+    // ملاحظة المستمسكات لخدمة التقاعد
+    let documentsNoteHtml = '';
+    if (serviceName && serviceName.includes('تقاعد')) {
+        documentsNoteHtml = `
+            <div class="documents-note">
+                <h4>📌 يرجى جلب المستمسكات المطلوبة إلى قسم التسجيل في الجامعة</h4>
+                <ul>
+                    <li>🪪 البطاقة الموحدة للطالب + الأم</li>
+                    <li>📋 هوية التقاعد</li>
+                    <li>📷 صورة الطالب</li>
+                </ul>
+            </div>
+        `;
+    }
     
     if (fields.length === 0) {
-        container.innerHTML = '<div class="alert alert-info">لا توجد بيانات مطلوبة. اضغط "متابعة للتحقق".</div>';
+        container.innerHTML = documentsNoteHtml + 
+            '<div class="alert alert-info">لا توجد بيانات مطلوبة. اضغط "متابعة للتحقق".</div>';
     } else {
-        container.innerHTML = fields.map(f => {
+        container.innerHTML = documentsNoteHtml + fields.map(f => {
             if (f.startsWith('select:')) {
                 const parts = f.replace('select:', '').split('|');
                 const label = parts[0];
@@ -1914,7 +2020,7 @@ async function submitManualInput() {
 }
 
 // ═══════════════════════════════════════════════════════
-// ✅ التحقق من الطالب (مع منع التكرار)
+// التحقق من الطالب (مع منع التكرار)
 // ═══════════════════════════════════════════════════════
 async function verifyStudent(regId) {
     openPage('page-confirm');
@@ -1936,7 +2042,6 @@ async function verifyStudent(regId) {
         
         currentStudent = data;
         
-        // ✅ التحقق من التكرار
         const duplicate = await checkDuplicateRequest(data.reg_id, currentService.id);
         
         let warningHtml = '';
@@ -1993,7 +2098,6 @@ async function verifyStudent(regId) {
             ${warningHtml}
         `;
         
-        // ✅ قفل زر الإرسال إذا فيه طلب سابق
         const submitBtn = document.getElementById('btn-final-submit');
         if (blockSubmit) {
             submitBtn.disabled = true;
@@ -2026,7 +2130,6 @@ async function finalSubmit() {
     try {
         const requestId = "REQ-" + Date.now().toString().slice(-8);
         
-        // ✅ تحقق أخير من التكرار
         const dup = await checkDuplicateRequest(currentStudent.reg_id, currentService.id);
         if (dup) {
             alert("⚠️ لديك طلب سابق على هذه الخدمة!\nلا يمكن تقديم طلب جديد.");
@@ -2099,7 +2202,7 @@ async function finalSubmit() {
 }
 
 // ═══════════════════════════════════════════════════════
-// ✅ إرسال طلب الزائر (مع منع التكرار)
+// إرسال طلب الزائر (مع منع التكرار)
 // ═══════════════════════════════════════════════════════
 async function submitVisitorRequest() {
     const btn = document.querySelector('#page-form .submit-btn');
@@ -2111,7 +2214,6 @@ async function submitVisitorRequest() {
     try {
         const phone = currentFormData['رقم الهاتف'];
         
-        // ✅ التحقق من التكرار برقم الهاتف
         if (phone) {
             const dup = await checkDuplicateByPhone(phone, currentService.id);
             if (dup) {
