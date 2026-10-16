@@ -461,7 +461,6 @@
 
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-        /* ✅ شارة "مغلقة" */
         .badge-closed {
             background: linear-gradient(135deg, #cbd5e1, #94a3b8);
             color: #1e293b;
@@ -937,6 +936,140 @@
             background: rgba(255,255,255,0.05);
         }
 
+        /* ✅ بطاقة البريد الجامعي */
+        .email-delivered-card {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.10));
+            border: 2px solid #10b981;
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .email-delivered-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .email-delivered-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-delivered-header i {
+            font-size: 1.5rem;
+            color: #10b981;
+        }
+
+        .email-delivered-header h3 {
+            font-size: 1rem;
+            color: #065f46;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        [data-theme="dark"] .email-delivered-header h3 { color: #34d399; }
+
+        .email-field {
+            background: rgba(255,255,255,0.85);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+
+        [data-theme="dark"] .email-field {
+            background: rgba(15,23,42,0.6);
+            border-color: rgba(16,185,129,0.4);
+        }
+
+        .email-field-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .email-field-label {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .email-field-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #065f46;
+            word-break: break-all;
+            direction: ltr;
+            text-align: left;
+        }
+
+        [data-theme="dark"] .email-field-value { color: #6ee7b7; }
+
+        .copy-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: #3b82f6;
+        }
+
+        .email-expiry-note {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(251,191,36,0.12);
+            border-radius: 8px;
+            border: 1px dashed #f59e0b;
+            position: relative;
+            z-index: 1;
+        }
+
+        .email-expiry-note strong {
+            color: #b45309;
+        }
+
+        [data-theme="dark"] .email-expiry-note strong { color: #fbbf24; }
+
         .hidden { display: none !important; }
         .loading { text-align: center; padding: 20px; color: var(--text-light); }
 
@@ -1234,6 +1367,7 @@ let servicesData = [];
 let currentImageFile = null;
 
 const DYNAMIC_SERVICE = 'S010';
+const EMAIL_EXPIRY_DAYS = 14;
 
 // ═══════════════════════════════════════════════════════
 // خرائط الحالة
@@ -1249,8 +1383,66 @@ const STATUS_INFO = {
 const SERVICE_ICONS_MAP = {
     "S001": "📄", "S002": "📧", "S003": "🎓", "S004": "🪪",
     "S005": "⏸️", "S006": "🏥", "S007": "🔄", "S008": "📱",
-    "S009": "⏰", "S010": "🏛️", "S012": "🎓",
+    "S009": "⏰", "S010": "🏛️", "S012": "🎓", "S013": "🏥",
+    "S014": "📧",
 };
+
+// ═══════════════════════════════════════════════════════
+// أدوات البريد الجامعي
+// ═══════════════════════════════════════════════════════
+function isEmailService(serviceName) {
+    if (!serviceName) return false;
+    return serviceName.includes('بريد') || 
+           serviceName.includes('إيميل') || 
+           serviceName.includes('ايميل') ||
+           serviceName.includes('email');
+}
+
+function isExpiredEmailRequest(req) {
+    if (req.status !== 'delivered') return false;
+    if (!isEmailService(req.service_name)) return false;
+    const ts = req.processed_at || req.timestamp;
+    if (!ts) return false;
+    try {
+        const dt = new Date(ts);
+        const now = new Date();
+        const days = (now - dt) / (1000 * 60 * 60 * 24);
+        return days > EMAIL_EXPIRY_DAYS;
+    } catch(e) {
+        return false;
+    }
+}
+
+function getDaysRemaining(req) {
+    const ts = req.processed_at || req.timestamp;
+    if (!ts) return EMAIL_EXPIRY_DAYS;
+    try {
+        const dt = new Date(ts);
+        const now = new Date();
+        const days = (now - dt) / (1000 * 60 * 60 * 24);
+        return Math.max(0, EMAIL_EXPIRY_DAYS - Math.floor(days));
+    } catch(e) {
+        return EMAIL_EXPIRY_DAYS;
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// نسخ للحافظة
+// ═══════════════════════════════════════════════════════
+function copyToClipboard(text, btnElement) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+        const original = btnElement.innerHTML;
+        btnElement.innerHTML = '✓ تم النسخ';
+        btnElement.classList.add('copied');
+        setTimeout(() => {
+            btnElement.innerHTML = original;
+            btnElement.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        alert('تعذّر النسخ: ' + err);
+    });
+}
 
 // ═══════════════════════════════════════════════════════
 // التحقق من وجود طلب سابق
@@ -1259,16 +1451,21 @@ async function checkDuplicateRequest(regId, serviceId) {
     try {
         const { data, error } = await supabaseClient
             .from("requests")
-            .select("request_id, status, timestamp")
+            .select("request_id, status, timestamp, service_name, processed_at")
             .eq("reg_id", regId)
             .eq("service_id", serviceId)
-            .in("status", ["pending", "approved", "ready"])
-            .limit(1);
+            .in("status", ["pending", "approved", "ready", "delivered"]);
         
         if (error) throw error;
         
         if (data && data.length > 0) {
-            return data[0];
+            for (const req of data) {
+                if (isExpiredEmailRequest(req)) continue;
+                if (req.status === 'delivered' && isEmailService(req.service_name)) {
+                    continue;
+                }
+                return req;
+            }
         }
         return null;
     } catch (err) {
@@ -1358,7 +1555,6 @@ function loadTheme() {
         themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
     }
 }
-
 // ═══════════════════════════════════════════════════════
 // إدارة الصفحات
 // ═══════════════════════════════════════════════════════
@@ -1416,7 +1612,9 @@ async function loadMyRequests() {
 
         if (rErr) throw rErr;
 
-        if (!requests || requests.length === 0) {
+        const visibleRequests = (requests || []).filter(r => !isExpiredEmailRequest(r));
+
+        if (!visibleRequests || visibleRequests.length === 0) {
             result.innerHTML = `
                 <div class="info-row" style="margin-bottom:15px;">
                     <span class="info-label">👤 الطالب</span>
@@ -1432,10 +1630,10 @@ async function loadMyRequests() {
         }
 
         const stats = {
-            total: requests.length,
-            pending: requests.filter(r => r.status === 'pending').length,
-            ready: requests.filter(r => r.status === 'ready').length,
-            delivered: requests.filter(r => r.status === 'delivered').length,
+            total: visibleRequests.length,
+            pending: visibleRequests.filter(r => r.status === 'pending').length,
+            ready: visibleRequests.filter(r => r.status === 'ready').length,
+            delivered: visibleRequests.filter(r => r.status === 'delivered').length,
         };
 
         let html = `
@@ -1468,7 +1666,7 @@ async function loadMyRequests() {
             </h3>
         `;
 
-        requests.forEach(req => {
+        visibleRequests.forEach(req => {
             html += renderMyRequestCard(req);
         });
 
@@ -1500,6 +1698,10 @@ function renderMyRequestCard(req) {
         dateStr = req.timestamp || '';
     }
 
+    if (isEmailService(req.service_name) && req.status === 'delivered') {
+        return renderEmailDeliveredCard(req, dateStr);
+    }
+
     let html = `<div class="my-req-card ${req.status}">`;
 
     if (req.status === 'ready') {
@@ -1523,7 +1725,6 @@ function renderMyRequestCard(req) {
         <div class="my-req-info">
             <span>🕐 ${dateStr}</span>
             <span>🎫 ${req.request_id || ''}</span>
-            ${req.financial_ok ? '<span style="color:#10b981;">💰 ذمة مؤيَّدة</span>' : ''}
         </div>
     `;
 
@@ -1534,9 +1735,79 @@ function renderMyRequestCard(req) {
             </div>
         `;
     }
-html += `</div>`;
+
+    html += `</div>`;
     return html;
 }
+
+function renderEmailDeliveredCard(req, dateStr) {
+    let email = '';
+    let password = '';
+    try {
+        const fd = JSON.parse(req.form_data || '{}');
+        email = fd['_البريد_جامعي'] || fd['_البريد_الجامعي'] || fd['البريد الجامعي'] || '';
+        password = fd['_كلمة_المرور'] || fd['كلمة المرور'] || '';
+    } catch(e) {
+        console.error('خطأ قراءة البريد:', e);
+    }
+
+    const daysLeft = getDaysRemaining(req);
+    const reqIdSafe = (req.request_id || '').replace(/[^a-zA-Z0-9]/g, '');
+
+    let html = `
+        <div class="email-delivered-card">
+            <div class="email-delivered-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>🎉 تم تسليم بريدك الجامعي</h3>
+            </div>
+    `;
+
+    if (email) {
+        html += `
+            <div class="email-field">
+                <div class="email-field-info">
+                    <span class="email-field-label">📧 البريد الجامعي</span>
+                    <span class="email-field-value" id="email-${reqIdSafe}">${email}</span>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('${email.replace(/'/g, "\\'")}', this)">
+                    <i class="fas fa-copy"></i> نسخ
+                </button>
+            </div>
+        `;
+    }
+
+    if (password) {
+        html += `
+            <div class="email-field">
+                <div class="email-field-info">
+                    <span class="email-field-label">🔑 كلمة المرور</span>
+                    <span class="email-field-value" id="pwd-${reqIdSafe}">${password}</span>
+                </div>
+                <button class="copy-btn" onclick="copyToClipboard('${password.replace(/'/g, "\\'")}', this)">
+                    <i class="fas fa-copy"></i> نسخ
+                </button>
+            </div>
+        `;
+    }
+
+    if (!email && !password) {
+        html += `
+            <div class="alert alert-warning">
+                ⏳ تم التسليم لكن البيانات لم تُسجل بعد — راجع الموظف
+            </div>
+        `;
+    }
+
+    html += `
+            <div class="email-expiry-note">
+                ⏰ يبقى هذا الطلب ظاهراً لمدة <strong>${daysLeft} يوم</strong> ثم يُحذف تلقائياً
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
 // ═══════════════════════════════════════════════════════
 // دوال الصور
 // ═══════════════════════════════════════════════════════
@@ -1619,7 +1890,7 @@ async function uploadImage(file, requestId) {
 }
 
 // ═══════════════════════════════════════════════════════
-// تحميل الخدمات — مع خدمة "استضافة" مغلقة
+// تحميل الخدمات
 // ═══════════════════════════════════════════════════════
 async function loadServices() {
     const container = document.getElementById('services-list');
@@ -1643,7 +1914,6 @@ async function loadServices() {
         container.innerHTML = data.map((s, index) => {
             const isLive = s.status === 'live';
 
-            // ✅ خدمة الاستضافة: مغلقة (غير قابلة للضغط) — الكود محفوظ للتفعيل لاحقاً
             const isClosed = s.service_name && s.service_name.includes('استضافة');
             const isActive = isLive && !isClosed;
 
@@ -1695,7 +1965,7 @@ function openServiceFromHepiq() {
 }
 
 // ═══════════════════════════════════════════════════════
-// اختيار خدمة
+// ✅ اختيار خدمة — مع كل التعديلات
 // ═══════════════════════════════════════════════════════
 function selectService(serviceId, serviceName, formFields) {
     let fields = [];
@@ -1710,8 +1980,46 @@ function selectService(serviceId, serviceName, formFields) {
         fields = [];
     }
 
-    // احتياط: إضافة حقل "الجهة / الهيئة" لو غير موجود في القاعدة
-    if (serviceName && serviceName.includes('تقاعد')) {
+    const nm = serviceName || '';
+
+    // ═══════════════════════════════════════════════════════
+    // ✅ 1) استمرارية + المباشرة: صورة الطالب + بدون سنة دراسية
+    // ═══════════════════════════════════════════════════════
+    if (nm.includes('استمرار') || nm.includes('مباشرة')) {
+        fields = fields.filter(f => {
+            const lower = String(f).toLowerCase();
+            return !lower.includes('سنة') &&
+                   !lower.includes('العام') &&
+                   !lower.includes('academic') &&
+                   !lower.includes('السنة الدراسية') &&
+                   !lower.includes('العام الدراسي');
+        });
+
+        const hasImage = fields.some(f => String(f).startsWith('image:'));
+        if (!hasImage) {
+            fields = [...fields, 'image:صورة الطالب'];
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ✅ 2) مراجعة / إحالة مستشفى: حقلان فقط
+    // ═══════════════════════════════════════════════════════
+    if (nm.includes('مراجعة') || nm.includes('إحالة') ||
+        nm.includes('مستشفى') || nm.includes('صحي')) {
+        fields = ['العمر', 'المركز الصحي المحال اليه'];
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ✅ 3) البريد الجامعي: لا حقول
+    // ═══════════════════════════════════════════════════════
+    if (isEmailService(nm)) {
+        fields = [];
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // احتياط: التقاعد
+    // ═══════════════════════════════════════════════════════
+    if (nm.includes('تقاعد')) {
         const hasEntityField = fields.some(f => f.includes('الجهة') || f.includes('الهيئة'));
         if (!hasEntityField) {
             fields = [...fields, 'الجهة / الهيئة'];
@@ -1723,17 +2031,17 @@ function selectService(serviceId, serviceName, formFields) {
         name: serviceName,
         fields: fields
     };
-    
+
     currentFormData = {};
     currentImageFile = null;
-    
+
     document.getElementById('form-title').textContent = serviceName;
-    
+
     const container = document.getElementById('form-fields');
 
-    // ملاحظة المستمسكات لخدمة التقاعد
+    // ملاحظة التقاعد
     let documentsNoteHtml = '';
-    if (serviceName && serviceName.includes('تقاعد')) {
+    if (nm.includes('تقاعد')) {
         documentsNoteHtml = `
             <div class="documents-note">
                 <h4>📌 يرجى جلب المستمسكات المطلوبة إلى قسم التسجيل في الجامعة</h4>
@@ -1745,10 +2053,24 @@ function selectService(serviceId, serviceName, formFields) {
             </div>
         `;
     }
-    
+
+    // ملاحظة البريد الجامعي
+    if (isEmailService(nm)) {
+        documentsNoteHtml = `
+            <div class="documents-note" style="border-color:#3b82f6; border-right-color:#2563eb; background:linear-gradient(135deg, rgba(59,130,246,0.10), rgba(139,92,246,0.08));">
+                <h4 style="color:#1d4ed8;">📧 طلب البريد الجامعي</h4>
+                <p>سيتم إنشاء بريدك الجامعي وإرساله إليك بعد مراجعة طلبك.</p>
+                <ul>
+                    <li>✅ تأكد من رقم التسجيل قبل المتابعة</li>
+                    <li>📩 سيظهر البريد وكلمة المرور في "طلباتي" عند التسليم</li>
+                </ul>
+            </div>
+        `;
+    }
+
     if (fields.length === 0) {
-        container.innerHTML = documentsNoteHtml + 
-            '<div class="alert alert-info">لا توجد بيانات مطلوبة. اضغط "متابعة للتحقق".</div>';
+        container.innerHTML = documentsNoteHtml +
+            '<div class="alert alert-info">اضغط "متابعة للتحقق" للمتابعة</div>';
     } else {
         container.innerHTML = documentsNoteHtml + fields.map(f => {
             if (f.startsWith('select:')) {
@@ -1758,7 +2080,7 @@ function selectService(serviceId, serviceName, formFields) {
                 return `
                     <div class="form-group">
                         <label>${label}</label>
-                        <select class="form-control" data-field="${f}" 
+                        <select class="form-control" data-field="${f}"
                                 onchange="onSelectChange(event)">
                             <option value="">— اختر —</option>
                             ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
@@ -1771,7 +2093,7 @@ function selectService(serviceId, serviceName, formFields) {
                 return `
                     <div class="form-group">
                         <label>📷 ${label}</label>
-                        <input type="file" class="form-control" accept="image/*" 
+                        <input type="file" class="form-control" accept="image/*"
                                data-field="${f}" data-type="image"
                                onchange="handleImageSelect(event)">
                         <div id="image-preview" style="margin-top:10px; display:none;">
@@ -1785,7 +2107,7 @@ function selectService(serviceId, serviceName, formFields) {
                 return `
                     <div class="form-group">
                         <label>📝 ${label} <span style="color:var(--text-light); font-size:0.8rem;">(اختياري)</span></label>
-                        <textarea class="form-control" data-field="${f}" rows="3" 
+                        <textarea class="form-control" data-field="${f}" rows="3"
                                   placeholder="اكتب أي ملاحظات إضافية..."></textarea>
                     </div>
                 `;
@@ -1793,22 +2115,22 @@ function selectService(serviceId, serviceName, formFields) {
             return `
                 <div class="form-group">
                     <label>${f}</label>
-                    <input type="text" class="form-control" data-field="${f}" 
+                    <input type="text" class="form-control" data-field="${f}"
                            placeholder="أدخل ${f}">
                 </div>
             `;
         }).join('');
     }
-    
+
     if (serviceId === DYNAMIC_SERVICE) {
         setupDynamicService();
     }
-    
+
     const submitBtn = document.querySelector('#page-form .submit-btn');
     if (submitBtn) {
         submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
     }
-    
+
     openPage('page-form');
 }
 
@@ -2168,7 +2490,6 @@ async function finalSubmit() {
                 form_data: JSON.stringify(currentFormData),
                 image_url: imageUrl,
                 image_name: imageName,
-                financial_ok: false,
                 status: "pending"
             })
             .select()
@@ -2182,6 +2503,9 @@ async function finalSubmit() {
         if (currentService.id === 'S009') {
             successTitle.textContent = '✅ تم الحجز';
             successText.innerHTML = '📌 راجع قسم التسجيل<br>لإكمال الإجراءات الورقية';
+        } else if (isEmailService(currentService.name)) {
+            successTitle.textContent = '✅ تم إرسال طلب البريد الجامعي';
+            successText.innerHTML = '📧 راجع "طلباتي" بعد التسليم<br>سيظهر البريد وكلمة المرور هنا';
         } else {
             successTitle.textContent = 'تم إرسال طلبك';
             successText.innerHTML = '⏳ الطلب قيد المراجعة<br>سيتم إشعارك عند الجاهزية';
@@ -2250,7 +2574,6 @@ async function submitVisitorRequest() {
                 form_data: JSON.stringify(currentFormData),
                 image_url: null,
                 image_name: null,
-                financial_ok: false,
                 status: "pending"
             })
             .select()
