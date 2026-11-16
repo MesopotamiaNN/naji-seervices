@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة خدمات جامعة الناجي الإلكترونية</title>
     
+    <!-- ✅ PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="جامعة الناجي">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -936,7 +944,6 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* ✅ بطاقة البريد الجامعي */
         .email-delivered-card {
             background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.10));
             border: 2px solid #10b981;
@@ -1369,9 +1376,6 @@ let currentImageFile = null;
 const DYNAMIC_SERVICE = 'S010';
 const EMAIL_EXPIRY_DAYS = 14;
 
-// ═══════════════════════════════════════════════════════
-// خرائط الحالة
-// ═══════════════════════════════════════════════════════
 const STATUS_INFO = {
     'pending':   { text: 'قيد المراجعة',   color: '#f59e0b', icon: '⏳' },
     'approved':  { text: 'موافق عليه',     color: '#3b82f6', icon: '✅' },
@@ -1387,9 +1391,6 @@ const SERVICE_ICONS_MAP = {
     "S014": "📧",
 };
 
-// ═══════════════════════════════════════════════════════
-// أدوات البريد الجامعي
-// ═══════════════════════════════════════════════════════
 function isEmailService(serviceName) {
     if (!serviceName) return false;
     return serviceName.includes('بريد') || 
@@ -1408,9 +1409,7 @@ function isExpiredEmailRequest(req) {
         const now = new Date();
         const days = (now - dt) / (1000 * 60 * 60 * 24);
         return days > EMAIL_EXPIRY_DAYS;
-    } catch(e) {
-        return false;
-    }
+    } catch(e) { return false; }
 }
 
 function getDaysRemaining(req) {
@@ -1421,14 +1420,8 @@ function getDaysRemaining(req) {
         const now = new Date();
         const days = (now - dt) / (1000 * 60 * 60 * 24);
         return Math.max(0, EMAIL_EXPIRY_DAYS - Math.floor(days));
-    } catch(e) {
-        return EMAIL_EXPIRY_DAYS;
-    }
+    } catch(e) { return EMAIL_EXPIRY_DAYS; }
 }
-
-// ═══════════════════════════════════════════════════════
-// نسخ للحافظة
-// ═══════════════════════════════════════════════════════
 function copyToClipboard(text, btnElement) {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
@@ -1439,14 +1432,9 @@ function copyToClipboard(text, btnElement) {
             btnElement.innerHTML = original;
             btnElement.classList.remove('copied');
         }, 2000);
-    }).catch(err => {
-        alert('تعذّر النسخ: ' + err);
-    });
+    }).catch(err => alert('تعذّر النسخ: ' + err));
 }
 
-// ═══════════════════════════════════════════════════════
-// التحقق من وجود طلب سابق
-// ═══════════════════════════════════════════════════════
 async function checkDuplicateRequest(regId, serviceId) {
     try {
         const { data, error } = await supabaseClient
@@ -1461,9 +1449,7 @@ async function checkDuplicateRequest(regId, serviceId) {
         if (data && data.length > 0) {
             for (const req of data) {
                 if (isExpiredEmailRequest(req)) continue;
-                if (req.status === 'delivered' && isEmailService(req.service_name)) {
-                    continue;
-                }
+                if (req.status === 'delivered' && isEmailService(req.service_name)) continue;
                 return req;
             }
         }
@@ -1489,9 +1475,7 @@ async function checkDuplicateByPhone(phone, serviceId) {
             for (const req of data) {
                 try {
                     const fd = JSON.parse(req.form_data || '{}');
-                    if (fd['رقم الهاتف'] && fd['رقم الهاتف'].includes(phone)) {
-                        return req;
-                    }
+                    if (fd['رقم الهاتف'] && fd['رقم الهاتف'].includes(phone)) return req;
                 } catch(e) {}
             }
         }
@@ -1502,17 +1486,11 @@ async function checkDuplicateByPhone(phone, serviceId) {
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// جزيئات الخلفية
-// ═══════════════════════════════════════════════════════
 function createParticles() {
     const container = document.getElementById('particlesContainer');
-    const particleCount = 25;
-
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < 25; i++) {
         const particle = document.createElement('div');
         particle.classList.add('particle');
-        
         const size = Math.random() * 8 + 3;
         particle.style.width = size + 'px';
         particle.style.height = size + 'px';
@@ -1520,14 +1498,10 @@ function createParticles() {
         particle.style.top = Math.random() * 100 + '%';
         particle.style.animationDuration = (Math.random() * 15 + 10) + 's';
         particle.style.animationDelay = Math.random() * 5 + 's';
-        
         container.appendChild(particle);
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// الوضع الليلي/النهاري
-// ═══════════════════════════════════════════════════════
 function toggleTheme() {
     const html = document.documentElement;
     const themeToggle = document.getElementById('themeToggle');
@@ -1547,7 +1521,6 @@ function toggleTheme() {
 function loadTheme() {
     const savedTheme = localStorage.getItem('theme');
     const themeToggle = document.getElementById('themeToggle');
-    
     if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
@@ -1555,9 +1528,7 @@ function loadTheme() {
         themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
     }
 }
-// ═══════════════════════════════════════════════════════
-// إدارة الصفحات
-// ═══════════════════════════════════════════════════════
+
 function openPage(pageId) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
@@ -1571,9 +1542,6 @@ function closePage(pageId) {
     stopScanner();
 }
 
-// ═══════════════════════════════════════════════════════
-// طلباتي
-// ═══════════════════════════════════════════════════════
 async function loadMyRequests() {
     const regIdInput = document.getElementById('my-req-reg-id');
     const result = document.getElementById('my-requests-result');
@@ -1597,8 +1565,7 @@ async function loadMyRequests() {
             .single();
 
         if (sErr || !student) {
-            result.innerHTML = 
-                '<div class="alert alert-error">❌ رقم التسجيل غير موجود</div>';
+            result.innerHTML = '<div class="alert alert-error">❌ رقم التسجيل غير موجود</div>';
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-search"></i> عرض طلباتي';
             return;
@@ -1620,9 +1587,7 @@ async function loadMyRequests() {
                     <span class="info-label">👤 الطالب</span>
                     <span class="info-value">${student.name}</span>
                 </div>
-                <div class="alert alert-info">
-                    📭 لم تقدم أي طلب حتى الآن
-                </div>
+                <div class="alert alert-info">📭 لم تقدم أي طلب حتى الآن</div>
             `;
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-search"></i> عرض طلباتي';
@@ -1641,35 +1606,16 @@ async function loadMyRequests() {
                 <span class="info-label">👤 الطالب</span>
                 <span class="info-value">${student.name}</span>
             </div>
-
             <div class="my-req-stats">
-                <div class="my-req-stat">
-                    <span class="num" style="color:#64748b;">${stats.total}</span>
-                    <span class="lbl">الإجمالي</span>
-                </div>
-                <div class="my-req-stat">
-                    <span class="num" style="color:#f59e0b;">${stats.pending}</span>
-                    <span class="lbl">قيد المراجعة</span>
-                </div>
-                <div class="my-req-stat">
-                    <span class="num" style="color:#10b981;">${stats.ready}</span>
-                    <span class="lbl">جاهز</span>
-                </div>
-                <div class="my-req-stat">
-                    <span class="num" style="color:#94a3b8;">${stats.delivered}</span>
-                    <span class="lbl">مُسلَّم</span>
-                </div>
+                <div class="my-req-stat"><span class="num" style="color:#64748b;">${stats.total}</span><span class="lbl">الإجمالي</span></div>
+                <div class="my-req-stat"><span class="num" style="color:#f59e0b;">${stats.pending}</span><span class="lbl">قيد المراجعة</span></div>
+                <div class="my-req-stat"><span class="num" style="color:#10b981;">${stats.ready}</span><span class="lbl">جاهز</span></div>
+                <div class="my-req-stat"><span class="num" style="color:#94a3b8;">${stats.delivered}</span><span class="lbl">مُسلَّم</span></div>
             </div>
-
-            <h3 style="font-size:0.95rem; margin-bottom:12px; color:var(--text-light);">
-                📋 سجل الطلبات
-            </h3>
+            <h3 style="font-size:0.95rem; margin-bottom:12px; color:var(--text-light);">📋 سجل الطلبات</h3>
         `;
 
-        visibleRequests.forEach(req => {
-            html += renderMyRequestCard(req);
-        });
-
+        visibleRequests.forEach(req => { html += renderMyRequestCard(req); });
         result.innerHTML = html;
 
     } catch (err) {
@@ -1694,48 +1640,29 @@ function renderMyRequestCard(req) {
         const hh = String(dt.getHours()).padStart(2, '0');
         const mm = String(dt.getMinutes()).padStart(2, '0');
         dateStr = `${y}/${m}/${d} — ${hh}:${mm}`;
-    } catch(e) {
-        dateStr = req.timestamp || '';
-    }
+    } catch(e) { dateStr = req.timestamp || ''; }
 
     if (isEmailService(req.service_name) && req.status === 'delivered') {
         return renderEmailDeliveredCard(req, dateStr);
     }
 
     let html = `<div class="my-req-card ${req.status}">`;
-
     if (req.status === 'ready') {
-        html += `
-            <div class="my-req-ready-banner">
-                📦 طلبك جاهز! — يُرجى مراجعة قسم التسجيل للاستلام
-            </div>
-        `;
+        html += `<div class="my-req-ready-banner">📦 طلبك جاهز! — يُرجى مراجعة قسم التسجيل للاستلام</div>`;
     }
-
     html += `
         <div class="my-req-head">
             <div class="my-req-service">${icon} ${req.service_name || ''}</div>
-            <div class="my-req-badge ${req.status}">
-                ${st.icon} ${st.text}
-            </div>
+            <div class="my-req-badge ${req.status}">${st.icon} ${st.text}</div>
         </div>
-    `;
-
-    html += `
         <div class="my-req-info">
             <span>🕐 ${dateStr}</span>
             <span>🎫 ${req.request_id || ''}</span>
         </div>
     `;
-
     if (req.employee_note) {
-        html += `
-            <div class="my-req-note">
-                💬 <strong>ملاحظة:</strong> ${req.employee_note}
-            </div>
-        `;
+        html += `<div class="my-req-note">💬 <strong>ملاحظة:</strong> ${req.employee_note}</div>`;
     }
-
     html += `</div>`;
     return html;
 }
@@ -1747,9 +1674,7 @@ function renderEmailDeliveredCard(req, dateStr) {
         const fd = JSON.parse(req.form_data || '{}');
         email = fd['_البريد_جامعي'] || fd['_البريد_الجامعي'] || fd['البريد الجامعي'] || '';
         password = fd['_كلمة_المرور'] || fd['كلمة المرور'] || '';
-    } catch(e) {
-        console.error('خطأ قراءة البريد:', e);
-    }
+    } catch(e) { console.error('خطأ قراءة البريد:', e); }
 
     const daysLeft = getDaysRemaining(req);
     const reqIdSafe = (req.request_id || '').replace(/[^a-zA-Z0-9]/g, '');
@@ -1791,11 +1716,7 @@ function renderEmailDeliveredCard(req, dateStr) {
     }
 
     if (!email && !password) {
-        html += `
-            <div class="alert alert-warning">
-                ⏳ تم التسليم لكن البيانات لم تُسجل بعد — راجع الموظف
-            </div>
-        `;
+        html += `<div class="alert alert-warning">⏳ تم التسليم لكن البيانات لم تُسجل بعد — راجع الموظف</div>`;
     }
 
     html += `
@@ -1804,25 +1725,18 @@ function renderEmailDeliveredCard(req, dateStr) {
             </div>
         </div>
     `;
-
     return html;
 }
 
-// ═══════════════════════════════════════════════════════
-// دوال الصور
-// ═══════════════════════════════════════════════════════
 function handleImageSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
     if (file.size > 5 * 1024 * 1024) {
         alert("⚠️ الصورة كبيرة جداً. الحد الأقصى 5 ميجا");
         event.target.value = "";
         return;
     }
-    
     currentImageFile = file;
-    
     const reader = new FileReader();
     reader.onload = function(e) {
         const preview = document.getElementById('image-preview');
@@ -1844,17 +1758,14 @@ async function compressImage(file, maxWidth = 1200, quality = 0.7) {
                 const canvas = document.createElement('canvas');
                 let width = img.width;
                 let height = img.height;
-                
                 if (width > maxWidth) {
                     height = (height * maxWidth) / width;
                     width = maxWidth;
                 }
-                
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                
                 canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
             };
         };
@@ -1865,33 +1776,20 @@ async function uploadImage(file, requestId) {
     try {
         const compressed = await compressImage(file);
         const fileName = `${requestId}_${Date.now()}.jpg`;
-        
         const { data, error } = await supabaseClient.storage
             .from('request-images')
-            .upload(fileName, compressed, {
-                contentType: 'image/jpeg',
-                upsert: false
-            });
-        
+            .upload(fileName, compressed, { contentType: 'image/jpeg', upsert: false });
         if (error) throw error;
-        
         const { data: urlData } = supabaseClient.storage
             .from('request-images')
             .getPublicUrl(fileName);
-        
-        return {
-            url: urlData.publicUrl,
-            name: fileName
-        };
+        return { url: urlData.publicUrl, name: fileName };
     } catch (err) {
         console.error("خطأ رفع الصورة:", err);
         return null;
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// تحميل الخدمات
-// ═══════════════════════════════════════════════════════
 async function loadServices() {
     const container = document.getElementById('services-list');
     container.innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
@@ -1903,7 +1801,6 @@ async function loadServices() {
             .order("sort_order");
         
         if (error) throw error;
-        
         if (!data || data.length === 0) {
             container.innerHTML = '<div class="alert alert-info">لا توجد خدمات متاحة حالياً</div>';
             return;
@@ -1913,26 +1810,19 @@ async function loadServices() {
         
         container.innerHTML = data.map((s, index) => {
             const isLive = s.status === 'live';
-
             const isClosed = s.service_name && s.service_name.includes('استضافة');
             const isActive = isLive && !isClosed;
 
             let badge;
-            if (isClosed) {
-                badge = '<span class="badge-closed">🔒 مغلقة</span>';
-            } else if (isLive) {
-                badge = '<span class="badge-live">متاح الآن</span>';
-            } else {
-                badge = '<span class="badge-soon">قريباً</span>';
-            }
+            if (isClosed) badge = '<span class="badge-closed">🔒 مغلقة</span>';
+            else if (isLive) badge = '<span class="badge-live">متاح الآن</span>';
+            else badge = '<span class="badge-soon">قريباً</span>';
 
             const clickAttr = isActive ? `onclick="handleServiceClick(${index})"` : '';
 
             return `
                 <div class="service-card ${!isActive ? 'soon' : ''}" ${clickAttr}>
-                    <div class="service-icon">
-                        <i class="fas fa-${s.icon || 'file'}"></i>
-                    </div>
+                    <div class="service-icon"><i class="fas fa-${s.icon || 'file'}"></i></div>
                     <div class="service-info">
                         <h3>${s.service_name}</h3>
                         <p>${s.Description || s.description || ''}</p>
@@ -1957,89 +1847,47 @@ function handleServiceClick(index) {
 
 function openServiceFromHepiq() {
     const s = servicesData.find(x => x.service_id === "S008");
-    if (!s) {
-        alert("الخدمة غير متاحة حالياً");
-        return;
-    }
+    if (!s) { alert("الخدمة غير متاحة حالياً"); return; }
     selectService(s.service_id, s.service_name, s.form_fields || "[]");
 }
 
-// ═══════════════════════════════════════════════════════
-// ✅ اختيار خدمة — مع كل التعديلات
-// ═══════════════════════════════════════════════════════
 function selectService(serviceId, serviceName, formFields) {
     let fields = [];
     try {
-        if (Array.isArray(formFields)) {
-            fields = formFields;
-        } else {
-            fields = JSON.parse(formFields || "[]");
-        }
-    } catch(e) {
-        console.error("خطأ في JSON:", e, formFields);
-        fields = [];
-    }
+        fields = Array.isArray(formFields) ? formFields : JSON.parse(formFields || "[]");
+    } catch(e) { console.error("خطأ في JSON:", e, formFields); fields = []; }
 
     const nm = serviceName || '';
 
-    // ═══════════════════════════════════════════════════════
-    // ✅ 1) استمرارية + المباشرة: صورة الطالب + بدون سنة دراسية
-    // ═══════════════════════════════════════════════════════
     if (nm.includes('استمرار') || nm.includes('مباشرة')) {
         fields = fields.filter(f => {
             const lower = String(f).toLowerCase();
-            return !lower.includes('سنة') &&
-                   !lower.includes('العام') &&
-                   !lower.includes('academic') &&
-                   !lower.includes('السنة الدراسية') &&
+            return !lower.includes('سنة') && !lower.includes('العام') &&
+                   !lower.includes('academic') && !lower.includes('السنة الدراسية') &&
                    !lower.includes('العام الدراسي');
         });
-
         const hasImage = fields.some(f => String(f).startsWith('image:'));
-        if (!hasImage) {
-            fields = [...fields, 'image:صورة الطالب'];
-        }
+        if (!hasImage) fields = [...fields, 'image:صورة الطالب'];
     }
 
-    // ═══════════════════════════════════════════════════════
-    // ✅ 2) مراجعة / إحالة مستشفى: حقلان فقط
-    // ═══════════════════════════════════════════════════════
-    if (nm.includes('مراجعة') || nm.includes('إحالة') ||
-        nm.includes('مستشفى') || nm.includes('صحي')) {
+    if (nm.includes('مراجعة') || nm.includes('إحالة') || nm.includes('مستشفى') || nm.includes('صحي')) {
         fields = ['العمر', 'المركز الصحي المحال اليه'];
     }
 
-    // ═══════════════════════════════════════════════════════
-    // ✅ 3) البريد الجامعي: لا حقول
-    // ═══════════════════════════════════════════════════════
-    if (isEmailService(nm)) {
-        fields = [];
-    }
+    if (isEmailService(nm)) fields = [];
 
-    // ═══════════════════════════════════════════════════════
-    // احتياط: التقاعد
-    // ═══════════════════════════════════════════════════════
     if (nm.includes('تقاعد')) {
         const hasEntityField = fields.some(f => f.includes('الجهة') || f.includes('الهيئة'));
-        if (!hasEntityField) {
-            fields = [...fields, 'الجهة / الهيئة'];
-        }
+        if (!hasEntityField) fields = [...fields, 'الجهة / الهيئة'];
     }
 
-    currentService = {
-        id: serviceId,
-        name: serviceName,
-        fields: fields
-    };
-
+    currentService = { id: serviceId, name: serviceName, fields: fields };
     currentFormData = {};
     currentImageFile = null;
-
     document.getElementById('form-title').textContent = serviceName;
 
     const container = document.getElementById('form-fields');
 
-    // ملاحظة التقاعد
     let documentsNoteHtml = '';
     if (nm.includes('تقاعد')) {
         documentsNoteHtml = `
@@ -2054,7 +1902,6 @@ function selectService(serviceId, serviceName, formFields) {
         `;
     }
 
-    // ملاحظة البريد الجامعي
     if (isEmailService(nm)) {
         documentsNoteHtml = `
             <div class="documents-note" style="border-color:#3b82f6; border-right-color:#2563eb; background:linear-gradient(135deg, rgba(59,130,246,0.10), rgba(139,92,246,0.08));">
@@ -2069,8 +1916,7 @@ function selectService(serviceId, serviceName, formFields) {
     }
 
     if (fields.length === 0) {
-        container.innerHTML = documentsNoteHtml +
-            '<div class="alert alert-info">اضغط "متابعة للتحقق" للمتابعة</div>';
+        container.innerHTML = documentsNoteHtml + '<div class="alert alert-info">اضغط "متابعة للتحقق" للمتابعة</div>';
     } else {
         container.innerHTML = documentsNoteHtml + fields.map(f => {
             if (f.startsWith('select:')) {
@@ -2080,8 +1926,7 @@ function selectService(serviceId, serviceName, formFields) {
                 return `
                     <div class="form-group">
                         <label>${label}</label>
-                        <select class="form-control" data-field="${f}"
-                                onchange="onSelectChange(event)">
+                        <select class="form-control" data-field="${f}" onchange="onSelectChange(event)">
                             <option value="">— اختر —</option>
                             ${options.map(o => `<option value="${o}">${o}</option>`).join('')}
                         </select>
@@ -2093,12 +1938,8 @@ function selectService(serviceId, serviceName, formFields) {
                 return `
                     <div class="form-group">
                         <label>📷 ${label}</label>
-                        <input type="file" class="form-control" accept="image/*"
-                               data-field="${f}" data-type="image"
-                               onchange="handleImageSelect(event)">
-                        <div id="image-preview" style="margin-top:10px; display:none;">
-                            <img id="preview-img">
-                        </div>
+                        <input type="file" class="form-control" accept="image/*" data-field="${f}" data-type="image" onchange="handleImageSelect(event)">
+                        <div id="image-preview" style="margin-top:10px; display:none;"><img id="preview-img"></div>
                     </div>
                 `;
             }
@@ -2107,29 +1948,23 @@ function selectService(serviceId, serviceName, formFields) {
                 return `
                     <div class="form-group">
                         <label>📝 ${label} <span style="color:var(--text-light); font-size:0.8rem;">(اختياري)</span></label>
-                        <textarea class="form-control" data-field="${f}" rows="3"
-                                  placeholder="اكتب أي ملاحظات إضافية..."></textarea>
+                        <textarea class="form-control" data-field="${f}" rows="3" placeholder="اكتب أي ملاحظات إضافية..."></textarea>
                     </div>
                 `;
             }
             return `
                 <div class="form-group">
                     <label>${f}</label>
-                    <input type="text" class="form-control" data-field="${f}"
-                           placeholder="أدخل ${f}">
+                    <input type="text" class="form-control" data-field="${f}" placeholder="أدخل ${f}">
                 </div>
             `;
         }).join('');
     }
 
-    if (serviceId === DYNAMIC_SERVICE) {
-        setupDynamicService();
-    }
+    if (serviceId === DYNAMIC_SERVICE) setupDynamicService();
 
     const submitBtn = document.querySelector('#page-form .submit-btn');
-    if (submitBtn) {
-        submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
-    }
+    if (submitBtn) submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
 
     openPage('page-form');
 }
@@ -2137,42 +1972,31 @@ function selectService(serviceId, serviceName, formFields) {
 function setupDynamicService() {
     const nameField = document.querySelector('[data-field="الاسم الرباعي"]');
     const phoneField = document.querySelector('[data-field="رقم الهاتف"]');
-    
     if (nameField) nameField.closest('.form-group').style.display = 'none';
     if (phoneField) phoneField.closest('.form-group').style.display = 'none';
 }
 
 function onSelectChange(event) {
     if (!currentService || currentService.id !== DYNAMIC_SERVICE) return;
-    
     const val = event.target.value;
     const nameField = document.querySelector('[data-field="الاسم الرباعي"]');
     const phoneField = document.querySelector('[data-field="رقم الهاتف"]');
-    
     const showExtra = (val === 'قبول جديد');
-    
     if (nameField) nameField.closest('.form-group').style.display = showExtra ? 'block' : 'none';
     if (phoneField) phoneField.closest('.form-group').style.display = showExtra ? 'block' : 'none';
-    
     const submitBtn = document.querySelector('#page-form .submit-btn');
     if (submitBtn) {
-        if (showExtra) {
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
-        } else {
-            submitBtn.innerHTML = '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
-        }
+        submitBtn.innerHTML = showExtra
+            ? '<i class="fas fa-paper-plane"></i> إرسال الطلب'
+            : '<i class="fas fa-arrow-left"></i> متابعة للتحقق';
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// المتابعة للتحقق
-// ═══════════════════════════════════════════════════════
 function goToVerify() {
     currentFormData = {};
     if (currentService.fields.length > 0) {
         for (const f of currentService.fields) {
             const input = document.querySelector(`[data-field="${f}"]`);
-            
             if (f.startsWith('select:')) {
                 if (!input || !input.value) {
                     alert(`⚠️ الرجاء اختيار: ${f.replace('select:','').split('|')[0]}`);
@@ -2181,7 +2005,6 @@ function goToVerify() {
                 currentFormData[f] = input.value;
                 continue;
             }
-            
             if (f.startsWith('image:')) {
                 if (!currentImageFile) {
                     alert(`⚠️ الرجاء رفع ${f.replace('image:','')}`);
@@ -2190,7 +2013,6 @@ function goToVerify() {
                 currentFormData[f] = '[صورة مرفوعة]';
                 continue;
             }
-            
             currentFormData[f] = input ? input.value.trim() : "";
         }
     }
@@ -2198,7 +2020,6 @@ function goToVerify() {
     if (currentService.id === DYNAMIC_SERVICE) {
         const selKey = currentService.fields.find(f => f.startsWith('select:'));
         const type = currentFormData[selKey];
-        
         if (type === 'قبول جديد') {
             const required = ['الاسم الرباعي', 'رقم الهاتف', 'موضوع الطلب', 'تفاصيل الطلب'];
             for (const f of required) {
@@ -2210,7 +2031,6 @@ function goToVerify() {
             submitVisitorRequest();
             return;
         }
-        
         if (type === 'طالب منتسب') {
             const required = ['موضوع الطلب', 'تفاصيل الطلب'];
             for (const f of required) {
@@ -2228,34 +2048,16 @@ function goToVerify() {
     
     let fieldsHtml = '';
     for (const [key, value] of Object.entries(currentFormData)) {
-        const displayKey = key
-            .replace('image:', '📷 ')
-            .replace('notes:', '📝 ')
-            .replace('select:', '');
-        fieldsHtml += `
-            <div class="summary-row">
-                <span>${displayKey}:</span>
-                <span>${value || '-'}</span>
-            </div>
-        `;
+        const displayKey = key.replace('image:', '📷 ').replace('notes:', '📝 ').replace('select:', '');
+        fieldsHtml += `<div class="summary-row"><span>${displayKey}:</span><span>${value || '-'}</span></div>`;
     }
     document.getElementById('summary-fields').innerHTML = fieldsHtml;
-    
     openPage('page-verify');
 }
 
-function backToForm() {
-    stopScanner();
-    openPage('page-form');
-}
+function backToForm() { stopScanner(); openPage('page-form'); }
+function backToVerify() { openPage('page-verify'); }
 
-function backToVerify() {
-    openPage('page-verify');
-}
-
-// ═══════════════════════════════════════════════════════
-// QR Scanner
-// ═══════════════════════════════════════════════════════
 async function startScanner() {
     const btn = document.getElementById('btn-start-scan');
     btn.disabled = true;
@@ -2263,18 +2065,15 @@ async function startScanner() {
     
     try {
         qrScanner = new Html5Qrcode("qr-reader");
-        
         await qrScanner.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: 250 },
             onScanSuccess,
             () => {}
         );
-        
         btn.innerHTML = '<i class="fas fa-stop"></i> إيقاف المسح';
         btn.disabled = false;
         btn.onclick = stopScanner;
-        
     } catch (err) {
         alert("خطأ في الكاميرا: " + err);
         btn.disabled = false;
@@ -2284,10 +2083,7 @@ async function startScanner() {
 
 async function stopScanner() {
     if (qrScanner) {
-        try { 
-            await qrScanner.stop(); 
-            await qrScanner.clear();
-        } catch(e) {}
+        try { await qrScanner.stop(); await qrScanner.clear(); } catch(e) {}
         qrScanner = null;
     }
     const btn = document.getElementById('btn-start-scan');
@@ -2300,26 +2096,14 @@ async function stopScanner() {
 
 async function onScanSuccess(decodedText) {
     if (qrScanner) {
-        try { 
-            await qrScanner.stop(); 
-            await qrScanner.clear();
-        } catch(e) {}
+        try { await qrScanner.stop(); await qrScanner.clear(); } catch(e) {}
         qrScanner = null;
     }
-    
     const regId = parseInt(decodedText.trim());
-    
-    if (isNaN(regId)) {
-        alert("QR Code غير صالح");
-        return;
-    }
-    
+    if (isNaN(regId)) { alert("QR Code غير صالح"); return; }
     await verifyStudent(regId);
 }
 
-// ═══════════════════════════════════════════════════════
-// إدخال يدوي
-// ═══════════════════════════════════════════════════════
 function showManualInput() {
     stopScanner();
     openPage('page-manual');
@@ -2331,18 +2115,10 @@ function showManualInput() {
 
 async function submitManualInput() {
     const regId = parseInt(document.getElementById('manual-reg-id').value);
-    
-    if (isNaN(regId)) {
-        alert("الرجاء إدخال رقم التسجيل");
-        return;
-    }
-    
+    if (isNaN(regId)) { alert("الرجاء إدخال رقم التسجيل"); return; }
     await verifyStudent(regId);
 }
 
-// ═══════════════════════════════════════════════════════
-// التحقق من الطالب
-// ═══════════════════════════════════════════════════════
 async function verifyStudent(regId) {
     openPage('page-confirm');
     document.getElementById('student-info').innerHTML = '<div class="loading">⏳ جاري التحقق...</div>';
@@ -2362,7 +2138,6 @@ async function verifyStudent(regId) {
         }
         
         currentStudent = data;
-        
         const duplicate = await checkDuplicateRequest(data.reg_id, currentService.id);
         
         let warningHtml = '';
@@ -2375,16 +2150,13 @@ async function verifyStudent(regId) {
                 'ready': '📦 جاهز للاستلام'
             };
             const statusTxt = statusMap[duplicate.status] || duplicate.status;
-            
             warningHtml = `
                 <div class="duplicate-warning">
                     <h4>⚠️ لديك طلب سابق على هذه الخدمة</h4>
                     <p>
                         <strong>رقم الطلب:</strong> ${duplicate.request_id}<br>
                         <strong>الحالة:</strong> ${statusTxt}<br>
-                        <span style="color:#64748b; font-size:0.8rem;">
-                            يمكنك تقديم طلب جديد بعد الانتهاء من الطلب الحالي.
-                        </span>
+                        <span style="color:#64748b; font-size:0.8rem;">يمكنك تقديم طلب جديد بعد الانتهاء من الطلب الحالي.</span>
                     </p>
                 </div>
             `;
@@ -2392,30 +2164,12 @@ async function verifyStudent(regId) {
         }
         
         document.getElementById('student-info').innerHTML = `
-            <div class="info-row">
-                <span class="info-label">رقم التسجيل</span>
-                <span class="info-value">${data.reg_id}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">الاسم</span>
-                <span class="info-value">${data.name}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">القسم</span>
-                <span class="info-value">${data.dept || '-'}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">الكلية</span>
-                <span class="info-value">${data.college || '-'}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">المرحلة</span>
-                <span class="info-value">${data.stage || '-'}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">نوع الدراسة</span>
-                <span class="info-value">${data.study_type || '-'}</span>
-            </div>
+            <div class="info-row"><span class="info-label">رقم التسجيل</span><span class="info-value">${data.reg_id}</span></div>
+            <div class="info-row"><span class="info-label">الاسم</span><span class="info-value">${data.name}</span></div>
+            <div class="info-row"><span class="info-label">القسم</span><span class="info-value">${data.dept || '-'}</span></div>
+            <div class="info-row"><span class="info-label">الكلية</span><span class="info-value">${data.college || '-'}</span></div>
+            <div class="info-row"><span class="info-label">المرحلة</span><span class="info-value">${data.stage || '-'}</span></div>
+            <div class="info-row"><span class="info-label">نوع الدراسة</span><span class="info-value">${data.study_type || '-'}</span></div>
             ${warningHtml}
         `;
         
@@ -2440,9 +2194,6 @@ async function verifyStudent(regId) {
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// الإرسال النهائي
-// ═══════════════════════════════════════════════════════
 async function finalSubmit() {
     const btn = document.getElementById('btn-final-submit');
     btn.disabled = true;
@@ -2464,7 +2215,6 @@ async function finalSubmit() {
         if (currentImageFile) {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع الصورة...';
             const uploadResult = await uploadImage(currentImageFile, requestId);
-            
             if (!uploadResult) {
                 alert("⚠️ فشل رفع الصورة. حاول مرة أخرى");
                 btn.disabled = false;
@@ -2513,7 +2263,6 @@ async function finalSubmit() {
         
         openPage('page-success');
         document.getElementById('success-request-id').textContent = "رقم الطلب: " + requestId;
-        
         currentImageFile = null;
         
     } catch (err) {
@@ -2524,9 +2273,6 @@ async function finalSubmit() {
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// إرسال طلب الزائر
-// ═══════════════════════════════════════════════════════
 async function submitVisitorRequest() {
     const btn = document.querySelector('#page-form .submit-btn');
     if (btn) {
@@ -2536,7 +2282,6 @@ async function submitVisitorRequest() {
     
     try {
         const phone = currentFormData['رقم الهاتف'];
-        
         if (phone) {
             const dup = await checkDuplicateByPhone(phone, currentService.id);
             if (dup) {
@@ -2546,10 +2291,7 @@ async function submitVisitorRequest() {
                     'ready': '📦 جاهز للاستلام'
                 };
                 const st = statusMap[dup.status] || dup.status;
-                alert(`⚠️ لديك طلب سابق بنفس رقم الهاتف!\n\n` +
-                      `رقم الطلب: ${dup.request_id}\n` +
-                      `الحالة: ${st}\n\n` +
-                      `لا يمكن تقديم طلب جديد قبل إكمال الطلب الحالي.`);
+                alert(`⚠️ لديك طلب سابق بنفس رقم الهاتف!\n\nرقم الطلب: ${dup.request_id}\nالحالة: ${st}\n\nلا يمكن تقديم طلب جديد قبل إكمال الطلب الحالي.`);
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الطلب';
@@ -2591,7 +2333,6 @@ async function submitVisitorRequest() {
         
         openPage('page-success');
         document.getElementById('success-request-id').textContent = "رقم الطلب: " + requestId;
-        
         currentFormData = {};
         
     } catch (err) {
@@ -2604,14 +2345,22 @@ async function submitVisitorRequest() {
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// التشغيل
-// ═══════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
     createParticles();
     loadTheme();
     loadServices();
 });
+</script>
+
+<!-- ✅ تسجيل Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('✅ PWA Ready'))
+        .catch(err => console.error('SW:', err));
+    });
+  }
 </script>
 
 </body>
