@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوابة خدمات جامعة الناجي الإلكترونية</title>
     
-    <!-- ✅ بداية إضافات الـ PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e3a8a">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="جامعة الناجي">
-    <!-- ✅ نهاية إضافات الـ PWA -->
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -103,7 +101,7 @@
             75% { transform: translateY(-60px) translateX(-50px) scale(1.5); opacity: 0.6; }
         }
 
-        .theme-toggle {
+        .profile-toggle {
             position: fixed;
             top: 20px; left: 20px;
             z-index: 100;
@@ -122,7 +120,56 @@
             transition: var(--transition);
         }
 
-        .theme-toggle:hover { transform: rotate(30deg) scale(1.1); box-shadow: var(--shadow-hover); }
+        .profile-toggle:hover { transform: scale(1.1); box-shadow: var(--shadow-hover); }
+        .profile-toggle.has-profile { border-color: #10b981; color: #10b981; }
+
+        /* ✅ شارة الإشعارات على زر البروفايل */
+        .profile-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            background: #ef4444;
+            color: white;
+            border-radius: 10px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg);
+            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.5);
+            z-index: 2;
+            animation: badgePulse 1.5s ease infinite;
+        }
+
+        .profile-badge.show { display: flex; }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* ✅ زر أيقونة الوضع الليلي */
+        .theme-icon-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--primary-light);
+            color: var(--text);
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .theme-icon-btn:hover { transform: scale(1.1); box-shadow: var(--shadow-hover); }
 
         .main-container {
             max-width: 500px;
@@ -182,49 +229,6 @@
         }
 
         .header p { font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
-
-        .my-requests-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            width: 100%;
-            padding: 18px 20px;
-            background: linear-gradient(135deg, #2563eb 0%, #8b5cf6 100%);
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            font-family: 'Cairo', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 800;
-            cursor: pointer;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.35);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .my-requests-btn::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .my-requests-btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 45px rgba(59, 130, 246, 0.5);
-        }
-
-        .my-requests-btn i { font-size: 1.4rem; }
 
         .section-title {
             text-align: center;
@@ -945,7 +949,6 @@
             background: rgba(255,255,255,0.05);
         }
 
-        /* ✅ بطاقة البريد الجامعي */
         .email-delivered-card {
             background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.10));
             border: 2px solid #10b981;
@@ -1092,7 +1095,7 @@
             .service-icon { width: 45px; height: 45px; font-size: 1.2rem; }
             .service-info h3 { font-size: 0.9rem; }
             .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 1.5rem; }
-            .theme-toggle { top: 15px; left: 15px; width: 45px; height: 45px; font-size: 1.1rem; }
+            .profile-toggle { top: 15px; left: 15px; width: 45px; height: 45px; font-size: 1.1rem; }
             .hepiq-logo { font-size: 1.4rem; }
             .store-btn { padding: 8px 12px; }
             .store-btn .btn-text small { font-size: 0.55rem; }
@@ -1106,8 +1109,10 @@
 
     <div class="particles-container" id="particlesContainer"></div>
 
-    <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-        <i class="fas fa-moon"></i>
+    <!-- ✅ زر البروفايل مع شارة الإشعارات -->
+    <button class="profile-toggle" id="profileBtn" onclick="openProfile()">
+        <i class="fas fa-user"></i>
+        <span class="profile-badge" id="profileBadge"></span>
     </button>
 
     <a href="https://wa.me/9647818999997" target="_blank" class="whatsapp-float">
@@ -1123,11 +1128,6 @@
             <h1>جامعة الناجي</h1>
             <p>بوابة الخدمات الإلكترونية</p>
         </div>
-
-        <button class="my-requests-btn" onclick="openPage('page-my-requests')">
-            <i class="fas fa-clipboard-list"></i>
-            📋 طلباتي — تابع حالة طلباتك
-        </button>
 
         <h2 class="section-title">تواصل معنا</h2>
         <div class="social-grid">
@@ -1191,7 +1191,27 @@
 
     </div>
 
-    <!-- صفحة: طلباتي -->
+    <div id="page-profile" class="page">
+        <div class="page-container">
+            <!-- ✅ زر الرجوع يمين + أيقونة الوضع الليلي يسار -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <button class="back-btn" onclick="closePage('page-profile')" style="margin-bottom:0;">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                </button>
+                <button class="theme-icon-btn" id="themeToggle" onclick="toggleTheme()" title="تبديل الوضع">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+
+            <div class="page-header">
+                <span class="page-icon"><i class="fas fa-user-circle"></i></span>
+                <h2>الملف الشخصي</h2>
+            </div>
+
+            <div id="profile-content"></div>
+        </div>
+    </div>
+
     <div id="page-my-requests" class="page">
         <div class="page-container">
             <button class="back-btn" onclick="closePage('page-my-requests')">
@@ -1219,7 +1239,6 @@
         </div>
     </div>
 
-    <!-- صفحة: النموذج -->
     <div id="page-form" class="page">
         <div class="page-container">
             <button class="back-btn" onclick="closePage('page-form')">
@@ -1246,7 +1265,6 @@
         </div>
     </div>
 
-    <!-- صفحة: التحقق -->
     <div id="page-verify" class="page">
         <div class="page-container">
             <button class="back-btn" onclick="backToForm()">
@@ -1280,12 +1298,11 @@
                 <i class="fas fa-camera"></i> بدء مسح الهوية
             </button>
             <button class="secondary-btn" onclick="showManualInput()">
-                <i class="fas fa-keyboard"></i> إدخال يدوي
+                <i class="fas fa-keyboard"></i> الدخول برقم التسجيل
             </button>
         </div>
     </div>
 
-    <!-- صفحة: إدخال يدوي -->
     <div id="page-manual" class="page">
         <div class="page-container">
             <button class="back-btn" onclick="backToVerify()">
@@ -1300,7 +1317,7 @@
 
             <div class="page-header">
                 <span class="page-icon">🔢</span>
-                <h2>إدخال يدوي</h2>
+                <h2>الدخول برقم التسجيل</h2>
                 <p>أدخل رقم التسجيل الخاص بك</p>
             </div>
 
@@ -1315,7 +1332,6 @@
         </div>
     </div>
 
-    <!-- صفحة: تأكيد البيانات -->
     <div id="page-confirm" class="page">
         <div class="page-container">
             <div class="progress-bar">
@@ -1341,7 +1357,6 @@
         </div>
     </div>
 
-    <!-- صفحة: نجاح -->
     <div id="page-success" class="page">
         <div class="page-container">
             <div class="success-msg">
@@ -1374,6 +1389,7 @@ let currentStudent = null;
 let qrScanner = null;
 let servicesData = [];
 let currentImageFile = null;
+let savedStudent = null;
 
 const DYNAMIC_SERVICE = 'S010';
 const EMAIL_EXPIRY_DAYS = 14;
@@ -1544,11 +1560,11 @@ function toggleTheme() {
     
     if (currentTheme === 'dark') {
         html.removeAttribute('data-theme');
-        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         localStorage.setItem('theme', 'light');
     } else {
         html.setAttribute('data-theme', 'dark');
-        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        if (themeToggle) themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         localStorage.setItem('theme', 'dark');
     }
 }
@@ -1556,6 +1572,7 @@ function toggleTheme() {
 function loadTheme() {
     const savedTheme = localStorage.getItem('theme');
     const themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) return;
     
     if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
@@ -1564,6 +1581,7 @@ function loadTheme() {
         themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
     }
 }
+
 // ═══════════════════════════════════════════════════════
 // إدارة الصفحات
 // ═══════════════════════════════════════════════════════
@@ -1572,12 +1590,234 @@ function openPage(pageId) {
     document.getElementById(pageId).classList.add('active');
     document.body.style.overflow = 'hidden';
     window.scrollTo(0, 0);
+    
+    if (pageId === 'page-my-requests') {
+        const savedId = getSavedRegId();
+        if (savedId) {
+            const input = document.getElementById('my-req-reg-id');
+            if (input && !input.value) input.value = savedId;
+        }
+    }
 }
 
 function closePage(pageId) {
     document.getElementById(pageId).classList.remove('active');
     document.body.style.overflow = 'auto';
     stopScanner();
+}
+
+// ═══════════════════════════════════════════════════════
+// الملف الشخصي
+// ═══════════════════════════════════════════════════════
+function getSavedRegId() {
+    return parseInt(localStorage.getItem('saved_reg_id')) || null;
+}
+
+function updateProfileButton() {
+    const btn = document.getElementById('profileBtn');
+    if (!btn) return;
+    btn.classList.toggle('has-profile', !!getSavedRegId());
+}
+
+function openProfile() {
+    const regId = getSavedRegId();
+    if (regId) loadProfileStudent(regId);
+    else renderProfileForm();
+    openPage('page-profile');
+}
+
+function renderProfileForm(errorMsg = '') {
+    document.getElementById('profile-content').innerHTML = `
+        <div class="alert alert-info" style="margin-bottom:15px;">
+            💡 أدخل رقم تسجيلك مرة واحدة، وسيُستخدم تلقائياً في كل طلب.
+        </div>
+        ${errorMsg ? `<div class="alert alert-error" style="margin-bottom:15px;">${errorMsg}</div>` : ''}
+        <div class="form-group">
+            <label>رقم التسجيل</label>
+            <input type="number" class="form-control" id="profile-reg-id" placeholder="أدخل رقم التسجيل">
+        </div>
+        <button class="submit-btn" onclick="saveProfile()">
+            <i class="fas fa-save"></i> حفظ الملف الشخصي
+        </button>
+    `;
+}
+
+async function saveProfile() {
+    const regId = parseInt(document.getElementById('profile-reg-id').value);
+    if (isNaN(regId)) { alert('⚠️ الرجاء إدخال رقم التسجيل'); return; }
+
+    const btn = document.querySelector('#page-profile .submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق...';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from("students").select("*").eq("reg_id", regId).single();
+        if (error || !data) { renderProfileForm('❌ رقم التسجيل غير موجود'); return; }
+
+        localStorage.setItem('saved_reg_id', regId);
+        localStorage.setItem('saved_student_name', data.name || '');
+        savedStudent = data;
+        updateProfileButton();
+        loadProfileStudent(regId);
+    } catch (err) {
+        renderProfileForm('❌ خطأ في الاتصال');
+    }
+}
+
+async function loadProfileStudent(regId) {
+    document.getElementById('profile-content').innerHTML = '<div class="loading">⏳ جاري التحميل...</div>';
+    try {
+        const { data, error } = await supabaseClient
+            .from("students").select("*").eq("reg_id", regId).single();
+
+        if (error || !data) {
+            localStorage.removeItem('saved_reg_id');
+            localStorage.removeItem('saved_student_name');
+            savedStudent = null;
+            updateProfileButton();
+            renderProfileForm('❌ لم يتم العثور على بياناتك، أدخل رقم التسجيل مجدداً');
+            return;
+        }
+
+        savedStudent = data;
+        updateProfileButton();
+
+        // ✅ جلب الطلبات لعرض الإحصائيات + حفظ snapshot + إخفاء الشارة
+        const { data: requests } = await supabaseClient
+            .from("requests")
+            .select("request_id, status, timestamp, service_name, processed_at")
+            .eq("reg_id", regId);
+
+        const visibleRequests = (requests || []).filter(r => !isExpiredEmailRequest(r));
+        const stats = {
+            pending: visibleRequests.filter(r => r.status === 'pending').length,
+            ready: visibleRequests.filter(r => r.status === 'ready').length,
+            delivered: visibleRequests.filter(r => r.status === 'delivered').length,
+        };
+
+        saveRequestsSnapshot(regId, visibleRequests);
+        clearProfileBadge();
+        document.getElementById('profile-content').innerHTML = `
+            <div class="info-row"><span class="info-label">رقم التسجيل</span><span class="info-value">${data.reg_id}</span></div>
+            <div class="info-row"><span class="info-label">الاسم</span><span class="info-value">${data.name}</span></div>
+            <div class="info-row"><span class="info-label">القسم</span><span class="info-value">${data.dept || '-'}</span></div>
+            <div class="info-row"><span class="info-label">الكلية</span><span class="info-value">${data.college || '-'}</span></div>
+            <div class="info-row"><span class="info-label">المرحلة</span><span class="info-value">${data.stage || '-'}</span></div>
+            <div class="info-row"><span class="info-label">نوع الدراسة</span><span class="info-value">${data.study_type || '-'}</span></div>
+
+            <h3 style="font-size:0.95rem; margin:18px 0 10px; color:var(--text-light);">📊 إحصائيات سريعة</h3>
+            <div class="my-req-stats" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="my-req-stat">
+                    <span class="num" style="color:#f59e0b;">${stats.pending}</span>
+                    <span class="lbl">قيد المراجعة</span>
+                </div>
+                <div class="my-req-stat">
+                    <span class="num" style="color:#10b981;">${stats.ready}</span>
+                    <span class="lbl">جاهزة</span>
+                </div>
+                <div class="my-req-stat">
+                    <span class="num" style="color:#94a3b8;">${stats.delivered}</span>
+                    <span class="lbl">مسلّمة</span>
+                </div>
+            </div>
+
+            <button class="submit-btn" style="margin-top:5px;" onclick="openMyRequestsFromProfile()">
+                <i class="fas fa-clipboard-list"></i> عرض جميع طلباتي
+            </button>
+
+            <button class="secondary-btn" style="margin-top:15px;" onclick="clearProfile()">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج / تغيير الحساب
+            </button>
+        `;
+    } catch (err) {
+        renderProfileForm('❌ خطأ في الاتصال');
+    }
+}
+
+function clearProfile() {
+    if (!confirm('هل تريد حذف بيانات الملف الشخصي؟')) return;
+    localStorage.removeItem('saved_reg_id');
+    localStorage.removeItem('saved_student_name');
+    savedStudent = null;
+    updateProfileButton();
+    clearProfileBadge();
+    renderProfileForm();
+}
+
+// ✅ فتح صفحة طلباتي من البروفايل مع تعبئة تلقائية
+function openMyRequestsFromProfile() {
+    openPage('page-my-requests');
+    const savedId = getSavedRegId();
+    if (savedId) {
+        const input = document.getElementById('my-req-reg-id');
+        if (input) input.value = savedId;
+        setTimeout(() => loadMyRequests(), 250);
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// ✅ شارة الإشعارات على زر البروفايل
+// ═══════════════════════════════════════════════════════
+function saveRequestsSnapshot(regId, requests) {
+    const snap = {};
+    for (const r of requests) snap[r.request_id] = r.status;
+    localStorage.setItem(`req_snapshot_${regId}`, JSON.stringify(snap));
+}
+
+function updateProfileBadge(count) {
+    const badge = document.getElementById('profileBadge');
+    if (!badge) return;
+    if (count > 0) {
+        badge.textContent = count > 9 ? '9+' : count;
+        badge.classList.add('show');
+    } else {
+        badge.classList.remove('show');
+    }
+}
+
+function clearProfileBadge() {
+    const badge = document.getElementById('profileBadge');
+    if (badge) badge.classList.remove('show');
+}
+
+async function checkRequestUpdates() {
+    const regId = getSavedRegId();
+    if (!regId) return;
+    try {
+        const { data: requests } = await supabaseClient
+            .from("requests")
+            .select("request_id, status, timestamp, service_name, processed_at")
+            .eq("reg_id", regId);
+
+        if (!requests) return;
+
+        const visibleRequests = requests.filter(r => !isExpiredEmailRequest(r));
+        const snapshotKey = `req_snapshot_${regId}`;
+        const raw = localStorage.getItem(snapshotKey);
+
+        const currentSnap = {};
+        for (const r of visibleRequests) currentSnap[r.request_id] = r.status;
+
+        // أول مرة: نخزّن الحالة الحالية بدون إظهار شارة
+        if (!raw) {
+            localStorage.setItem(snapshotKey, JSON.stringify(currentSnap));
+            return;
+        }
+
+        let savedSnap = {};
+        try { savedSnap = JSON.parse(raw) || {}; } catch(e) { savedSnap = {}; }
+
+        let changeCount = 0;
+        for (const r of visibleRequests) {
+            if (!savedSnap[r.request_id]) changeCount++;                    // طلب جديد
+            else if (savedSnap[r.request_id] !== r.status) changeCount++;   // تغيّرت حالته
+        }
+
+        updateProfileBadge(changeCount);
+    } catch (e) {
+        console.error('checkRequestUpdates:', e);
+    }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1680,6 +1920,13 @@ async function loadMyRequests() {
         });
 
         result.innerHTML = html;
+
+        // ✅ تحديث الـ snapshot وإخفاء الشارة لأن المستخدم شاهد البيانات
+        const savedId = getSavedRegId();
+        if (savedId && savedId === regId) {
+            saveRequestsSnapshot(regId, visibleRequests);
+            clearProfileBadge();
+        }
 
     } catch (err) {
         console.error("خطأ:", err);
@@ -1897,6 +2144,7 @@ async function uploadImage(file, requestId) {
         return null;
     }
 }
+
 // ═══════════════════════════════════════════════════════
 // تحميل الخدمات
 // ═══════════════════════════════════════════════════════
@@ -1973,7 +2221,7 @@ function openServiceFromHepiq() {
 }
 
 // ═══════════════════════════════════════════════════════
-// ✅ اختيار خدمة — مع كل التعديلات
+// اختيار خدمة
 // ═══════════════════════════════════════════════════════
 function selectService(serviceId, serviceName, formFields) {
     let fields = [];
@@ -1990,9 +2238,6 @@ function selectService(serviceId, serviceName, formFields) {
 
     const nm = serviceName || '';
 
-    // ═══════════════════════════════════════════════════════
-    // ✅ 1) استمرارية + المباشرة: صورة الطالب + بدون سنة دراسية
-    // ═══════════════════════════════════════════════════════
     if (nm.includes('استمرار') || nm.includes('مباشرة')) {
         fields = fields.filter(f => {
             const lower = String(f).toLowerCase();
@@ -2009,24 +2254,15 @@ function selectService(serviceId, serviceName, formFields) {
         }
     }
 
-    // ═══════════════════════════════════════════════════════
-    // ✅ 2) مراجعة / إحالة مستشفى: حقلان فقط
-    // ═══════════════════════════════════════════════════════
     if (nm.includes('مراجعة') || nm.includes('إحالة') ||
         nm.includes('مستشفى') || nm.includes('صحي')) {
         fields = ['العمر', 'المركز الصحي المحال اليه'];
     }
 
-    // ═══════════════════════════════════════════════════════
-    // ✅ 3) البريد الجامعي: لا حقول
-    // ═══════════════════════════════════════════════════════
     if (isEmailService(nm)) {
         fields = [];
     }
 
-    // ═══════════════════════════════════════════════════════
-    // احتياط: التقاعد
-    // ═══════════════════════════════════════════════════════
     if (nm.includes('تقاعد')) {
         const hasEntityField = fields.some(f => f.includes('الجهة') || f.includes('الهيئة'));
         if (!hasEntityField) {
@@ -2047,7 +2283,6 @@ function selectService(serviceId, serviceName, formFields) {
 
     const container = document.getElementById('form-fields');
 
-    // ملاحظة التقاعد
     let documentsNoteHtml = '';
     if (nm.includes('تقاعد')) {
         documentsNoteHtml = `
@@ -2062,7 +2297,6 @@ function selectService(serviceId, serviceName, formFields) {
         `;
     }
 
-    // ملاحظة البريد الجامعي
     if (isEmailService(nm)) {
         documentsNoteHtml = `
             <div class="documents-note" style="border-color:#3b82f6; border-right-color:#2563eb; background:linear-gradient(135deg, rgba(59,130,246,0.10), rgba(139,92,246,0.08));">
@@ -2249,6 +2483,12 @@ function goToVerify() {
     }
     document.getElementById('summary-fields').innerHTML = fieldsHtml;
     
+    const savedId = getSavedRegId();
+    if (savedId) {
+        verifyStudent(savedId);
+        return;
+    }
+    
     openPage('page-verify');
 }
 
@@ -2326,7 +2566,7 @@ async function onScanSuccess(decodedText) {
 }
 
 // ═══════════════════════════════════════════════════════
-// إدخال يدوي
+// الدخول برقم التسجيل
 // ═══════════════════════════════════════════════════════
 function showManualInput() {
     stopScanner();
@@ -2619,10 +2859,16 @@ document.addEventListener('DOMContentLoaded', function() {
     createParticles();
     loadTheme();
     loadServices();
+    updateProfileButton();
+
+    // ✅ فحص تغييرات الطلبات + تحديث الشارة كل 60 ثانية
+    if (getSavedRegId()) {
+        checkRequestUpdates();
+        setInterval(checkRequestUpdates, 60000);
+    }
 });
 </script>
 
-<!-- ✅ إضافة تسجيل Service Worker للـ PWA (فقط) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
